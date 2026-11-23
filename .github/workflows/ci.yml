@@ -1,0 +1,167 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  APP_DIR: sentinelops/sentinelops-app
+  CONSOLE_DIR: sentinelops/sentinelops-console/backend
+  REGISTRY: ghcr.io
+
+jobs:
+  # ---- Test: frontend (unit + production build) ----
+  test-frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.APP_DIR }}/services/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: ${{ env.APP_DIR }}/services/frontend/package-lock.json
+      - run: npm ci
+      - run: npm run test
+      - run: npm run build
+
+  # ---- Test: console backend + realtime GitHub feed ----
+  test-backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.CONSOLE_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: ${{ env.CONSOLE_DIR }}/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: python -m pytest -q
+
+  # ---- Test: Go microservices (each module separately) ----
+  test-go:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api-gateway, orders, payments]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+      - name: go test (${{ matrix.service }})
+        working-directory: ${{ env.APP_DIR }}/services/${{ matrix.service }}
+        run: go test ./... -race -coverprofile=coverage.out
+
+  # ---- Test: catalog service imports cleanly ----
+  catalog-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.APP_DIR }}/services/catalog
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python -c "from app.main import app; print(app.title)"
+
+  # ---- Secret scanning ----
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---- Build, scan, sign & push every service image ----
+  build-scan:
+    needs: [test-frontend, test-backend, test-go, catalog-check, secrets]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    strategy:
+      matrix:
+        include:
+          - service: api-gateway
+            context: sentinelops/sentinelops-app/services/api-gateway
+          - service: catalog
+            context: sentinelops/sentinelops-app/services/catalog
+          - service: orders
+            context: sentinelops/sentinelops-app/services/orders
+          - service: payments
+            context: sentinelops/sentinelops-app/services/payments
+          - service: frontend
+            context: sentinelops/sentinelops-app/services/frontend
+          - service: console
+            context: sentinelops/sentinelops-console/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      # Build once into the local daemon so Trivy always has an image to scan,
+      # including on pull requests where nothing is pushed.
+      - name: Build image for scanning
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          push: false
+          load: true
+          tags: so-${{ matrix.service }}:ci
+
+      - name: Trivy scan (fail on HIGH/CRITICAL)
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: so-${{ matrix.service }}:ci
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+
+      - name: Login to GHCR
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push multi-arch image
+        id: push
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}:sha-${{ github.sha }}
+
+      - name: Install Cosign
+        if: github.ref == 'refs/heads/main'
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign image (keyless)
+        if: github.ref == 'refs/heads/main'
+        run: cosign sign --yes "${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}@${{ steps.push.outputs.digest }}"
+
+      - name: Generate SPDX SBOM
+        if: github.ref == 'refs/heads/main'
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}@${{ steps.push.outputs.digest }}
+          format: spdx-json
+          artifact-name: sbom-${{ matrix.service }}.spdx.json

@@ -91,7 +91,7 @@ async def alertmanager_webhook(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 @router.post("/actions")
-def run_remediation_action(payload: dict[str, Any]) -> dict[str, Any]:
+async def run_remediation_action(payload: dict[str, Any]) -> dict[str, Any]:
     action = payload.get("action", "")
     if action not in ALLOWED_ACTIONS:
         raise HTTPException(status_code=403, detail="action not allow-listed")

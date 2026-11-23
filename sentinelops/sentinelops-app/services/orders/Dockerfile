@@ -5,7 +5,9 @@ COPY . .
 RUN go build -o /bin/orders .
 
 FROM alpine:3.20
+RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
 COPY --from=build /bin/orders /app/orders
+USER app
 EXPOSE 8080
 ENTRYPOINT ["/app/orders"]

@@ -10,7 +10,7 @@ sentinelops/
   sentinelops-infra/    # OpenTofu + Ansible + k3s cluster (Week 1)
   sentinelops-app/       # Demo e-commerce microservices + CI (Weeks 1-3)
   sentinelops-gitops/   # ArgoCD, canary, policies, chaos, workloads (Weeks 2-7)
-  sentinelops-console/  # Custom web console: FastAPI backend + React frontend (Weeks 9-10)
+  sentinelops-console/  # Custom web console: FastAPI backend (React frontend lives in sentinelops-app/services/frontend) (Weeks 9-10)
 ```
 
 ## Blueprint mapping
@@ -22,9 +22,9 @@ sentinelops/
 | 3. Tech stack + versions | all | versions pinned in sentinelops-infra/VERSIONS.md |
 | 4. Repo structure | all | scaffolded |
 | 5. Implementation details | infra/app/gitops/console | in progress / scaffolded |
-| 6. Console screens | sentinelops-console | done (Screens 1-8 built, styled via `build-docs/global(1).css`) |
+| 6. Console screens | sentinelops-app/services/frontend | done (Screens 1-8 + Demo Shop built, styled via `build-docs/global(1).css`) |
 | 7. Week-by-week plan | cross-repo | planned |
-| 8. Testing + metrics | console/frontend | in progress (Vitest green) |
+| 8. Testing + metrics | sentinelops-app/services/frontend | in progress (Vitest green) |
 | 9. Demo script | - | pending |
 | 10. Risks | cross-repo | documented |
 
@@ -44,13 +44,34 @@ sentinelops/
 - [x] Alertmanager webhook receiver config + PrometheusRule alert sets
 - [x] Console frontend screens 1-8 wired
 - [x] Final artifacts authored: DEMO_SCRIPT.md, RESUME_BULLETS.md, load/k6-traffic.js + K6_RUNBOOK.md
-- [x] Fullstack rebuild: console frontend (React 19 + Vite 6 + Tailwind 4 design system from `build-docs/global(1).css`), demo shop frontend, CORS + API proxy wiring
-- [x] `npm run build` passes for console frontend and demo shop frontend
+- [x] Fullstack rebuild: single frontend (React 19 + Vite 6 + Tailwind 4 design system from `build-docs/global(1).css`) hosting Demo Shop + Console screens, CORS + API proxy wiring
+- [x] `npm run build` passes for the single frontend (`sentinelops-app/services/frontend`) and demo shop frontend
 - [x] Week 5-6: ServiceMonitors for orders/catalog/api-gateway/payments, KEDA ScaledObject (orders), HPA (orders)
 - [x] Week 7: OpenCost deployment, Falco platform, Chaos Mesh experiments, remediation webhook + load tests in place
 - [x] Keycloak realm + OIDC client config, Grafana SentinelOps dashboard (Week 8-9 prep)
 - [x] Testing phase started: Vitest + Testing Library + jsdom, `Overview` screen test green (`npm run test`)
 - [x] Supabase wired as database (client + `.env` + `src/utils/supabase.ts`, Overview/Login queries), Create User form with roles (admin/developer/viewer) via Supabase Auth, password visibility toggle added
+- [x] Auth moved to Supabase Auth with GitHub OAuth provider (`signInWithOAuth({ provider: "github" })`), single frontend consolidation (console + demo shop)
+- [x] Realtime GitHub feed: HMAC-verified webhook receiver + SSE stream + live "GitHub" console tab (see `REALTIME_GITHUB.md`)
+- [x] Royal blue / white design system with polished button hover states in `build-docs/global(1).css`
+- [x] Repo-root CI (frontend Vitest, backend pytest, Go tests, Trivy, Cosign, SBOM) + gated Deploy workflow (GitHub Pages + GitOps promotion)
+- [x] `sentinelops-app/docker-compose.yml` runs all 6 services + Valkey with health checks
+- [x] Fixed catalog service startup (`prometheus_client.RequestHandler`) and api-gateway Dockerfile
+
+## CI / CD
+
+Workflows live at the repository root (`.github/workflows/`):
+
+- `ci.yml` — on every push/PR: frontend Vitest + build, backend pytest, Go tests,
+  catalog import check, gitleaks, then per-service image build → Trivy scan →
+  (on `main`) GHCR push + Cosign signing + SPDX SBOM.
+- `deploy.yml` — runs only after a green CI on `main`: deploys the React build to
+  GitHub Pages and promotes all service image tags in the GitOps overlay so
+  ArgoCD syncs them.
+
+To use the Pages job, set the repo's **Settings → Pages → Build and deployment →
+Source** to **GitHub Actions**. Set `GITOPS_REPOSITORY` / `GITOPS_TOKEN` as repo
+variables/secrets if promotion targets a private GitOps repo.
 
 ## Remaining
 

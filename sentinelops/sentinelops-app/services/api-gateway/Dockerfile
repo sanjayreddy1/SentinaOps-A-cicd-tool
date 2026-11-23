@@ -5,8 +5,9 @@ COPY . .
 RUN go build -o /bin/api-gateway .
 
 FROM alpine:3.20
-RUN add -S fuse
+RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
 COPY --from=build /bin/api-gateway /app/api-gateway
+USER app
 EXPOSE 8080
 ENTRYPOINT ["/app/api-gateway"]

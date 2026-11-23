@@ -1,0 +1,89 @@
+name: Deploy
+
+# Runs only after a green CI on main (or manually) so tests always gate deploys.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ---- Deploy the React console/shop as a static GitHub Pages site ----
+  deploy-pages:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: sentinelops/sentinelops-app/services/frontend/package-lock.json
+      - name: Install & build frontend
+        working-directory: sentinelops/sentinelops-app/services/frontend
+        run: |
+          npm ci
+          npm run build
+          touch dist/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: sentinelops/sentinelops-app/services/frontend/dist
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  # ---- Promote the scanned images to the GitOps repo (ArgoCD then syncs) ----
+  promote-gitops:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Install kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
+        continue-on-error: true
+        id: gitops_checkout
+        with:
+          repository: ${{ vars.GITOPS_REPOSITORY || 'sanjuportfolio/sentinelops-gitops' }}
+          token: ${{ secrets.GITOPS_TOKEN || secrets.GITHUB_TOKEN }}
+          path: sentinelops-gitops
+
+      - name: Set image digests in dev overlay
+        if: steps.gitops_checkout.outcome == 'success'
+        working-directory: sentinelops-gitops/workloads/overlays/dev
+        env:
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for svc in api-gateway catalog orders payments frontend console; do
+            image="ghcr.io/${REPO}/${svc}"
+            kustomize edit set image "${image}=${image}:sha-${SHA::7}"
+          done
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No image changes to promote."
+          else
+            git commit -m "chore: promote images to sha-${SHA::7}"
+            git push
+          fi

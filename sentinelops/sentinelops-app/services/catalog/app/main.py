@@ -1,17 +1,25 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
-from prometheus_client import Counter, generate_latest, RequestHandler
+from fastapi import FastAPI, Request
+from fastapi.responses import Response
+from prometheus_client import REGISTRY, Counter, generate_latest
 
 REQUESTS = Counter("api_requests_total", "Total API requests", ["service", "status"])
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    return None
+    yield
 
 
 app = FastAPI(title="SentinelOps Catalog", lifespan=lifespan)
+
+
+@app.middleware("http")
+async def count_requests(request: Request, call_next):
+    response = await call_next(request)
+    REQUESTS.labels(service="catalog", status=str(response.status_code)).inc()
+    return response
 
 
 @app.get("/healthz")
@@ -26,7 +34,14 @@ def readyz():
 
 @app.get("/metrics")
 def metrics():
-    return generate_latest(REQUEST_HANDLER)
+    return Response(generate_latest(REGISTRY), media_type="text/plain; version=0.0.4; charset=utf-8")
 
 
-REQUEST_HANDLER = RequestHandler()
+@app.get("/products")
+def products():
+    return {
+        "products": [
+            {"id": "sku-1", "name": "SentinelOps Tee", "price": 25},
+            {"id": "sku-2", "name": "Realtime Hoodie", "price": 48},
+        ]
+    }
