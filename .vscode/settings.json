@@ -1,0 +1,10 @@
+{
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/sentinelops/sentinelops-console/backend",
+    "${workspaceFolder}/sentinelops/sentinelops-app/services/catalog"
+  ],
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}/sentinelops/sentinelops-console/backend",
+    "${workspaceFolder}/sentinelops/sentinelops-app/services/catalog"
+  ]
+}

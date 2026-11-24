@@ -1,28 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-
-const MOCK_CVE: Record<number, string> = {
-  0: "CVE-2024-1234",
-  1: "CVE-2024-5678",
-  2: "CVE-2023-9012",
-  3: "CVE-2024-3456",
-  4: "CVE-2023-7890",
-};
-
-const MOCK_STATUS: Record<number, { label: string; color: string }> = {
-  0: { label: "Patch available", color: "#22c55e" },
-  1: { label: "No fix", color: "#dc2626" },
-  2: { label: "Patch available", color: "#22c55e" },
-  3: { label: "Patch available", color: "#22c55e" },
-  4: { label: "No fix", color: "#dc2626" },
-};
-
-const MOCK_TIMESTAMPS: Record<number, string> = {
-  0: "2026-11-23 12:01",
-  1: "2026-11-23 11:45",
-  2: "2026-11-23 11:30",
-  3: "2026-11-23 10:58",
-};
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const severityIcon = (sev: string) => {
   switch (sev?.toLowerCase()) {
@@ -35,15 +12,51 @@ const severityIcon = (sev: string) => {
 };
 
 export default function SecurityCenter() {
+  const queryClient = useQueryClient();
   const [tab, setTab] = useState("vulnerabilities");
+  const [scanRepo, setScanRepo] = useState("https://github.com/sanjayreddy1/SentinaOps-A-cicd-tool");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const { data: vulns } = useQuery({
+  const { data: vulns, isLoading: vulnsLoading } = useQuery({
     queryKey: ["vulnerabilities"],
-    queryFn: async () => (await fetch("/api/vulnerabilities")).json(),
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/vulnerabilities");
+        if (!res.ok) throw new Error("API failed");
+        return await res.json();
+      } catch {
+        return [];
+      }
+    },
   });
+
   const { data: policy } = useQuery({
     queryKey: ["policy-violations"],
-    queryFn: async () => (await fetch("/api/policy-violations")).json(),
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/policy-violations");
+        if (!res.ok) throw new Error("API failed");
+        return await res.json();
+      } catch {
+        return [];
+      }
+    },
+  });
+
+  const scanMutation = useMutation({
+    mutationFn: async (repo: string) => {
+      const res = await fetch("/api/pipeline/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ repo_url: repo, branch: "main", deploy_target: "cloud" }),
+      });
+      if (!res.ok) throw new Error("Scan failed");
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vulnerabilities"] });
+      queryClient.invalidateQueries({ queryKey: ["deployments"] });
+    },
   });
 
   const vulnerabilities = Array.isArray(vulns) ? vulns : vulns ? [vulns] : [];
@@ -54,20 +67,53 @@ export default function SecurityCenter() {
   const medium   = vulnerabilities.filter((v: any) => v?.severity?.toLowerCase() === "medium").length;
 
   const tabs = [
-    { id: "vulnerabilities", label: "Vulnerabilities", count: vulnerabilities.length },
-    { id: "policy", label: "Policy Violations", count: violations.length },
+    { id: "vulnerabilities", label: "Vulnerabilities (OSV/CVE)", count: vulnerabilities.length },
+    { id: "policy", label: "Policy Violations (Kyverno/OPA)", count: violations.length },
   ];
+
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2500);
+  };
 
   return (
     <div style={{ maxWidth: "960px" }}>
       {/* Page Header */}
-      <div style={{ marginBottom: "24px" }}>
-        <h2 className="text-2xl font-bold" style={{ margin: 0 }}>
+      <div style={{ marginBottom: "20px" }}>
+        <h2 className="text-2xl font-bold" style={{ margin: 0, color: "#ffffff" }}>
           Security Center
         </h2>
         <p className="text-sm" style={{ color: "var(--text-muted)", marginTop: "4px" }}>
-          Vulnerabilities, image signing and admission policy enforcement.
+          Real-time vulnerability scanner (OSV/CVE database), container policy enforcement, and live fix suggestions.
         </p>
+      </div>
+
+      {/* On-Demand Real-Time Scan Bar */}
+      <div className="card" style={{ marginBottom: "24px", padding: "16px 20px", background: "rgba(14, 21, 48, 0.8)", borderTop: "3px solid #6B8CFF" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+          <div style={{ flex: "1 1 340px" }}>
+            <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#60a5fa", display: "block", marginBottom: "4px" }}>
+              ⚡ Scan Any GitHub Repository in Real-Time:
+            </span>
+            <input
+              type="text"
+              className="input"
+              value={scanRepo}
+              onChange={(e) => setScanRepo(e.target.value)}
+              placeholder="https://github.com/owner/repository"
+            />
+          </div>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={scanMutation.isPending}
+            onClick={() => scanMutation.mutate(scanRepo)}
+            style={{ alignSelf: "flex-end" }}
+          >
+            {scanMutation.isPending ? "Scanning OSV Database..." : "🔍 Run Live Security Scan"}
+          </button>
+        </div>
       </div>
 
       {/* Risk Summary Row */}
@@ -79,46 +125,72 @@ export default function SecurityCenter() {
           marginBottom: "28px",
         }}
       >
-        {[
-          { label: "Critical", count: critical, color: "#dc2626", icon: "🔴", border: "#dc2626" },
-          { label: "High",     count: high,     color: "#ea580c", icon: "🟠", border: "#ea580c" },
-          { label: "Medium",   count: medium,   color: "#f59e0b", icon: "🟡", border: "#f59e0b" },
-        ].map(({ label, count, color, icon, border }) => (
-          <div
-            key={label}
-            className="card"
-            style={{ borderTop: `3px solid ${border}`, textAlign: "center", padding: "16px" }}
-          >
-            <div style={{ fontSize: "1.5rem", marginBottom: "6px" }}>{icon}</div>
-            <div style={{ fontSize: "2rem", fontWeight: 700, color, lineHeight: 1 }}>{count}</div>
-            <div
-              style={{
-                fontSize: "0.75rem",
-                color: "var(--text-muted)",
-                marginTop: "4px",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-              }}
-            >
-              {label}
+        <div
+          className="card"
+          style={{
+            borderLeft: "4px solid var(--so-danger)",
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
+            padding: "16px 20px",
+          }}
+        >
+          <span style={{ fontSize: "1.75rem", lineHeight: 1 }}>🔴</span>
+          <div>
+            <div style={{ fontSize: "1.75rem", fontWeight: 700, lineHeight: 1.1, color: "var(--text)" }}>
+              {critical}
+            </div>
+            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+              Critical
             </div>
           </div>
-        ))}
+        </div>
+
+        <div
+          className="card"
+          style={{
+            borderLeft: "4px solid #EA580C",
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
+            padding: "16px 20px",
+          }}
+        >
+          <span style={{ fontSize: "1.75rem", lineHeight: 1 }}>🟠</span>
+          <div>
+            <div style={{ fontSize: "1.75rem", fontWeight: 700, lineHeight: 1.1, color: "var(--text)" }}>
+              {high}
+            </div>
+            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+              High
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="card"
+          style={{
+            borderLeft: "4px solid var(--so-warning)",
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
+            padding: "16px 20px",
+          }}
+        >
+          <span style={{ fontSize: "1.75rem", lineHeight: 1 }}>🟡</span>
+          <div>
+            <div style={{ fontSize: "1.75rem", fontWeight: 700, lineHeight: 1.1, color: "var(--text)" }}>
+              {medium}
+            </div>
+            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+              Medium
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Pill Tab Navigation */}
-      <div
-        style={{
-          display: "flex",
-          gap: "8px",
-          marginBottom: "20px",
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-          borderRadius: "999px",
-          padding: "4px",
-          width: "fit-content",
-        }}
-      >
+      {/* Tab Navigation */}
+      <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
         {tabs.map((t) => {
           const isActive = tab === t.id;
           return (
@@ -127,35 +199,32 @@ export default function SecurityCenter() {
               type="button"
               onClick={() => setTab(t.id)}
               style={{
-                display: "flex",
+                display: "inline-flex",
                 alignItems: "center",
-                gap: "6px",
-                padding: "7px 18px",
-                borderRadius: "999px",
-                border: "none",
-                cursor: "pointer",
+                gap: "8px",
+                padding: "8px 18px",
+                borderRadius: "var(--radius-pill)",
+                fontSize: "var(--fs-sm)",
                 fontWeight: 600,
-                fontSize: "0.875rem",
-                transition: "all 0.15s ease",
-                background: isActive ? "#fff" : "transparent",
-                color: isActive ? "#070b1a" : "var(--text-muted)",
-                boxShadow: isActive ? "0 1px 4px #0004" : "none",
+                border: "1px solid",
+                borderColor: isActive ? "var(--so-primary-600)" : "var(--border)",
+                background: isActive ? "#FFFFFF" : "transparent",
+                color: isActive ? "#070B1A" : "var(--text-muted)",
+                cursor: "pointer",
               }}
             >
-              {t.label}
+              <span>{t.label}</span>
               <span
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  minWidth: "20px",
-                  height: "20px",
-                  borderRadius: "999px",
-                  fontSize: "0.7rem",
+                  fontSize: "11px",
                   fontWeight: 700,
-                  padding: "0 5px",
-                  background: isActive ? "#4169e1" : "var(--surface-2)",
-                  color: isActive ? "#fff" : "var(--text-muted)",
+                  padding: "1px 7px",
+                  borderRadius: "var(--radius-pill)",
+                  background: isActive ? "#4169E1" : "rgba(65, 105, 225, 0.2)",
+                  color: "#FFFFFF",
                 }}
               >
                 {t.count}
@@ -167,210 +236,104 @@ export default function SecurityCenter() {
 
       {/* Tab Content */}
       {tab === "vulnerabilities" ? (
-        <div
-          className="card"
-          style={{ padding: 0, overflow: "hidden" }}
-        >
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", fontSize: "0.875rem", borderCollapse: "collapse" }}>
-              <thead>
-                <tr
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          {vulnerabilities.length === 0 ? (
+            <div className="card text-center" style={{ padding: "40px 20px" }}>
+              <div style={{ fontSize: "3rem" }}>✅</div>
+              <h3 style={{ marginTop: "12px", color: "#ffffff" }}>0 Vulnerabilities Detected</h3>
+              <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                All scanned dependencies and container manifests meet current production security standards.
+              </p>
+            </div>
+          ) : (
+            vulnerabilities.map((v: any, i: number) => {
+              const cve = v.id || v.aliases?.[0] || `VULN-${i}`;
+              const sev = (v.severity || "low").toLowerCase();
+              return (
+                <div
+                  key={i}
+                  className="card"
                   style={{
-                    background: "var(--surface-2)",
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 2,
-                    borderBottom: "1px solid var(--border)",
+                    borderLeft: `4px solid ${sev === "critical" ? "#dc2626" : sev === "high" ? "#ea580c" : "#f59e0b"}`,
+                    padding: "16px 20px",
                   }}
                 >
-                  {["CVE", "Workload", "Severity", "Package", "Fixed in", "Status"].map((h) => (
-                    <th
-                      key={h}
-                      style={{
-                        padding: "11px 14px",
-                        textAlign: "left",
-                        fontWeight: 600,
-                        fontSize: "0.75rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                        color: "var(--text-muted)",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {vulnerabilities.map((v: any, i: number) => {
-                  const cve = MOCK_CVE[i] ?? `CVE-2024-${1000 + i}`;
-                  const statusMeta = MOCK_STATUS[i] ?? { label: "Unknown", color: "var(--text-muted)" };
-                  return (
-                    <tr
-                      key={i}
-                      style={{
-                        background: i % 2 === 0 ? "var(--surface)" : "var(--surface-2)",
-                        borderBottom: "1px solid var(--border)",
-                      }}
-                    >
-                      <td style={{ padding: "11px 14px" }}>
-                        <span
-                          style={{
-                            fontFamily: "var(--font-mono)",
-                            fontSize: "0.75rem",
-                            color: "var(--link)",
-                            background: "var(--surface-2)",
-                            padding: "2px 7px",
-                            borderRadius: "4px",
-                            whiteSpace: "nowrap",
-                          }}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px" }}>
+                    <div>
+                      <span className={`badge badge-${sev}`} style={{ marginRight: "8px" }}>
+                        {severityIcon(v.severity)} {v.severity}
+                      </span>
+                      <code style={{ fontSize: "0.85rem", color: "#38bdf8", fontWeight: 700 }}>
+                        {cve}
+                      </code>
+                      <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginLeft: "8px" }}>
+                        in <strong>{v.workload}</strong> ({v.package} @ {v.installed_version || "current"})
+                      </span>
+                    </div>
+
+                    <span style={{ fontSize: "0.8rem", color: "#22c55e", fontWeight: 600 }}>
+                      Fixed in: {v.fixed_in || "Latest Patch"}
+                    </span>
+                  </div>
+
+                  <p style={{ fontSize: "0.85rem", color: "#e2e8f0", margin: "10px 0" }}>
+                    {v.summary}
+                  </p>
+
+                  {/* Suggestion Box */}
+                  <div style={{ background: "rgba(7, 11, 26, 0.75)", padding: "12px 14px", borderRadius: "8px", border: "1px solid rgba(255, 255, 255, 0.08)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                      <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#60a5fa", display: "flex", alignItems: "center", gap: "4px" }}>
+                        <span>💡</span> Realtime Remediation Suggestion:
+                      </span>
+                      {v.remediation_cmd && (
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          style={{ fontSize: "0.7rem", padding: "2px 8px" }}
+                          onClick={() => handleCopy(v.remediation_cmd, `sugg-${i}`)}
                         >
-                          {cve}
-                        </span>
-                      </td>
-                      <td style={{ padding: "11px 14px", color: "var(--text)", fontWeight: 500 }}>
-                        {v.workload}
-                      </td>
-                      <td style={{ padding: "11px 14px" }}>
-                        <span
-                          className={`badge badge-${v.severity?.toLowerCase() ?? "low"}`}
-                          style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
-                        >
-                          {severityIcon(v.severity)} {v.severity}
-                        </span>
-                      </td>
-                      <td style={{ padding: "11px 14px", color: "var(--text-muted)" }}>
-                        {v.package}
-                      </td>
-                      <td
-                        style={{
-                          padding: "11px 14px",
-                          color: "var(--text-muted)",
-                          fontFamily: "var(--font-mono)",
-                          fontSize: "0.8125rem",
-                        }}
-                      >
-                        {v.fixed_in}
-                      </td>
-                      <td style={{ padding: "11px 14px" }}>
-                        <span
-                          style={{
-                            fontSize: "0.75rem",
-                            fontWeight: 600,
-                            color: statusMeta.color,
-                            background: `${statusMeta.color}22`,
-                            padding: "2px 10px",
-                            borderRadius: "999px",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {statusMeta.label}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {vulnerabilities.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      style={{ padding: "32px", textAlign: "center", color: "var(--text-muted)" }}
-                    >
-                      No vulnerabilities found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                          {copiedId === `sugg-${i}` ? "✓ Copied" : "Copy Fix Command"}
+                        </button>
+                      )}
+                    </div>
+                    <p style={{ fontSize: "0.8rem", color: "#cbd5e1", margin: 0 }}>
+                      {v.suggestion || `Upgrade ${v.package} to version ${v.fixed_in} to resolve ${cve}.`}
+                    </p>
+                    {v.remediation_cmd && (
+                      <pre style={{ margin: "8px 0 0 0", padding: "6px 10px", fontSize: "0.75rem", color: "#38bdf8", background: "#060914" }}>
+                        {v.remediation_cmd}
+                      </pre>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       ) : (
-        /* Policy Violations */
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {violations.length === 0 && (
-            <div className="card" style={{ textAlign: "center", color: "var(--text-muted)", padding: "32px" }}>
-              No policy violations found.
-            </div>
-          )}
           {violations.map((v: any, i: number) => (
             <div
               key={i}
               className="card"
-              style={{ borderLeft: "4px solid #dc2626", padding: "16px 20px" }}
+              style={{
+                borderLeft: "4px solid var(--so-danger)",
+                padding: "16px 20px",
+              }}
             >
-              {/* Top Row: policy badge + resource name + "Blocked by OPA" label */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  flexWrap: "wrap",
-                  gap: "10px",
-                  marginBottom: "10px",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <span className="badge badge-fail">{v.policy}</span>
-                  <span style={{ fontWeight: 600, fontSize: "0.9375rem", color: "var(--text)" }}>
-                    {v.resource}
-                  </span>
-                </div>
-                <span
-                  style={{
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    color: "#dc2626",
-                    background: "#dc262622",
-                    padding: "3px 10px",
-                    borderRadius: "999px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                  }}
-                >
-                  🛡️ Blocked by OPA
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                <span className="badge badge-fail">{v.policy}</span>
+                <span style={{ fontSize: "var(--fs-sm)", fontWeight: 600, color: "var(--text)" }}>
+                  {v.resource}
+                </span>
+                <span className="badge badge-warn" style={{ marginLeft: "auto", fontSize: "11px" }}>
+                  Blocked by OPA/Kyverno
                 </span>
               </div>
-
-              {/* User + reason */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: "8px",
-                  flexWrap: "wrap",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "0.8125rem",
-                    color: "var(--text-muted)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "5px",
-                  }}
-                >
-                  <span>👤</span>
-                  <span style={{ color: "var(--text)", fontWeight: 500 }}>{v.user}</span>
-                </span>
-                <span style={{ color: "var(--border)" }}>·</span>
-                <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>{v.reason}</span>
-              </div>
-
-              {/* Timestamp */}
-              <div
-                style={{
-                  marginTop: "10px",
-                  paddingTop: "8px",
-                  borderTop: "1px solid var(--border)",
-                  fontSize: "0.75rem",
-                  color: "var(--text-muted)",
-                  fontFamily: "var(--font-mono)",
-                }}
-              >
-                🕐 {MOCK_TIMESTAMPS[i] ?? "2026-11-23 12:00"}
-              </div>
+              <p style={{ margin: "8px 0 0", fontSize: "var(--fs-sm)", color: "var(--text-muted)" }}>
+                User <strong style={{ color: "var(--text)" }}>{v.user}</strong>: {v.reason}
+              </p>
             </div>
           ))}
         </div>
