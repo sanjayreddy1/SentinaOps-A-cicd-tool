@@ -89,7 +89,30 @@ export default function Overview() {
     },
   });
 
-  const cards = kpiCards(data);
+  const { data: deploymentsData } = useQuery({
+    queryKey: ["deployments"],
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/deployments");
+        if (!res.ok) return [];
+        return await res.json();
+      } catch {
+        return [];
+      }
+    },
+    refetchInterval: 5000,
+  });
+
+  const deployments: any[] = Array.isArray(deploymentsData) ? deploymentsData : [];
+
+  // Merge dynamic real-time deployment count into KPIs
+  const liveData = {
+    ...data,
+    deploys_today: deployments.length > 0 ? deployments.length : (data?.deploys_today ?? 2),
+    policy_blocks: deployments.filter((d: any) => d.status === "Blocked" || d.sync_status === "Blocked").length || (data?.policy_blocks ?? 0),
+  };
+
+  const cards = kpiCards(liveData);
 
   return (
     <div style={{ padding: "1.5rem" }}>
@@ -333,6 +356,65 @@ export default function Overview() {
           </span>
         ))}
       </div>
+
+      {/* Real-time Multi-Repo Cloud Deployments Card */}
+      {deployments.length > 0 && (
+        <div className="card" style={{ marginTop: "1.75rem", padding: "1.25rem", borderTop: "3px solid #3b82f6" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: "0.5rem" }}>
+            <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "#ffffff", margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <span>🚀</span> Active On-Demand Deployments &amp; Live Sites
+              <span className="live-dot" />
+            </h3>
+            <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
+              Real-time sync with CI/CD Security Pipeline
+            </span>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem" }}>
+            {deployments.slice(0, 4).map((d: any, idx: number) => (
+              <div
+                key={idx}
+                style={{
+                  background: "rgba(10, 15, 36, 0.7)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  borderRadius: "8px",
+                  padding: "1rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  gap: "0.75rem",
+                }}
+              >
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem", marginBottom: "0.35rem" }}>
+                    <strong style={{ color: "#ffffff", fontSize: "0.95rem" }}>{d.service}</strong>
+                    <span className={`badge ${d.sync_status === "Synced" || d.status === "Live" ? "badge-pass" : "badge-fail"}`} style={{ fontSize: "0.7rem" }}>
+                      {d.status || d.sync_status}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
+                    Branch: <code style={{ color: "#38bdf8" }}>{d.branch || "main"}</code> · {d.cloud_provider?.includes("Render") ? "Render" : "GitHub Pages"}
+                  </div>
+                </div>
+
+                {d.live_url ? (
+                  <a
+                    href={d.live_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-white btn-sm"
+                    style={{ fontSize: "0.75rem", padding: "4px 10px", fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.3rem" }}
+                  >
+                    <span>🌐</span> Open App ↗
+                  </a>
+                ) : (
+                  <span style={{ fontSize: "0.75rem", color: "#ef4444" }}>Blocked by Policy</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
