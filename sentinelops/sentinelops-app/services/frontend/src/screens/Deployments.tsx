@@ -150,7 +150,7 @@ export default function Deployments() {
               <span className="live-dot" style={{ display: "inline-block" }} />
             </h3>
             <p style={{ fontSize: "0.8rem", color: "#94a3b8", marginTop: "0.25rem" }}>
-              Connect any GitHub repository. The app performs a real-time OSV vulnerability scan, enforces admission policies, and provisions the live web link.
+              Provide any GitHub repository and branch. The platform executes a real-time OSV security check, provides fix suggestions, and deploys directly to GitHub Pages.
             </p>
           </div>
           <span className="badge badge-royal" style={{ fontSize: "0.75rem" }}>Real-time (No Simulation)</span>
