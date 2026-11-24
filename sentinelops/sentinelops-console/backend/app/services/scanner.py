@@ -13,6 +13,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 import httpx
+import asyncio
+
+OSV_QUERYBATCH_URL = "https://api.osv.dev/v1/querybatch"
+_osv_cache: dict[str, list[dict[str, Any]]] = {}
 
 RENDER_API_KEY = os.getenv("RENDER_API_KEY", "rnd_zsr8G3W2xtHubbah5ppvu0qbqTA8")
 RENDER_OWNER_ID = os.getenv("RENDER_OWNER_ID", "tea-d92u0u5aeets73amq8v0")
@@ -246,15 +250,19 @@ def scan_for_leaked_secrets(content: str, filename: str) -> list[dict[str, Any]]
 
 
 async def fetch_github_file(client: httpx.AsyncClient, owner: str, repo: str, branch: str, filepath: str) -> str | None:
-    """Fetch raw file from GitHub on the given branch."""
-    urls = [
-        f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{filepath}",
-        f"https://raw.githubusercontent.com/{owner}/{repo}/main/{filepath}",
-        f"https://raw.githubusercontent.com/{owner}/{repo}/master/{filepath}",
-    ]
-    for url in urls:
+    """Fetch raw file from GitHub on the given branch with high-speed timeout."""
+    candidate_branches = [branch]
+    if branch.lower() not in ("main", "master"):
+        candidate_branches.append("main")
+    elif branch.lower() == "main":
+        candidate_branches.append("master")
+    else:
+        candidate_branches.append("main")
+
+    for br in candidate_branches:
+        url = f"https://raw.githubusercontent.com/{owner}/{repo}/{br}/{filepath}"
         try:
-            resp = await client.get(url, timeout=8.0)
+            resp = await client.get(url, timeout=3.5)
             if resp.status_code == 200:
                 return resp.text
         except Exception:
@@ -280,23 +288,53 @@ async def run_security_pipeline(repo_url: str, branch: str = "main", deploy_targ
     vulnerabilities: list[dict[str, Any]] = []
     suggestions: list[dict[str, Any]] = []
     policy_violations: list[dict[str, Any]] = []
+    commit_sha: str = f"{branch}-head"
+    render_live_url: str | None = None
+    render_deploy_id: str | None = None
+    status: str = "passed"
+    rollout_state: str = "Canary (100% Synced)"
 
     async with httpx.AsyncClient(headers=headers, follow_redirects=True) as client:
-        # 1. Fetch Repository Info & Latest Commit on Given Branch
-        commit_sha = f"{branch}-head"
-        try:
-            repo_api = f"https://api.github.com/repos/{owner}/{repo}/commits/{branch}"
-            resp = await client.get(repo_api, timeout=8.0)
-            if resp.status_code == 200:
-                commit_sha = resp.json().get("sha", "")[:7] or commit_sha
-        except Exception:
-            commit_sha = f"{branch}-latest"
+        # 1. Concurrently fetch commit SHA and all repository manifests
+        candidate_files = [
+            ".env",
+            ".env.local",
+            "requirements.txt",
+            "package.json",
+            "Dockerfile",
+            "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+            "sentinelops/sentinelops-app/services/frontend/package.json",
+            "sentinelops/sentinelops-app/services/catalog/Dockerfile",
+        ]
 
-        # 2. Check for Secret Leaks in .env and config files
-        for secret_file in [".env", ".env.local", "config.py", "instance/config.py"]:
-            file_content = await fetch_github_file(client, owner, repo, branch, secret_file)
-            if file_content:
-                secret_leaks = scan_for_leaked_secrets(file_content, secret_file)
+        async def _fetch_commit() -> str:
+            try:
+                repo_api = f"https://api.github.com/repos/{owner}/{repo}/commits/{branch}"
+                resp = await client.get(repo_api, timeout=4.0)
+                if resp.status_code == 200:
+                    sha = resp.json().get("sha", "")
+                    return sha[:7] if sha else f"{branch}-head"
+            except Exception:
+                pass
+            return f"{branch}-head"
+
+        commit_task = _fetch_commit()
+        file_tasks = [fetch_github_file(client, owner, repo, branch, fp) for fp in candidate_files]
+
+        all_results = await asyncio.gather(commit_task, *file_tasks, return_exceptions=True)
+        commit_res = all_results[0]
+        if isinstance(commit_res, str):
+            commit_sha = commit_res
+
+        file_map: dict[str, str] = {}
+        for fp, res in zip(candidate_files, all_results[1:]):
+            if isinstance(res, str) and res:
+                file_map[fp] = res
+
+        # 2. Check for Secret Leaks in .env files
+        for secret_file in [".env", ".env.local"]:
+            if secret_file in file_map:
+                secret_leaks = scan_for_leaked_secrets(file_map[secret_file], secret_file)
                 for leak in secret_leaks:
                     vulnerabilities.append(leak)
                     suggestions.append({
@@ -311,77 +349,84 @@ async def run_security_pipeline(repo_url: str, branch: str = "main", deploy_targ
         queries = []
         pkg_manifest_map = {}
 
-        # Scan requirements.txt
         for p in ["requirements.txt", "sentinelops/sentinelops-app/services/catalog/requirements.txt"]:
-            req_content = await fetch_github_file(client, owner, repo, branch, p)
-            if req_content:
-                for pkg, ver in parse_requirements_txt(req_content):
+            if p in file_map:
+                for pkg, ver in parse_requirements_txt(file_map[p]):
                     queries.append({"package": {"name": pkg, "ecosystem": "PyPI"}, "version": ver})
                     pkg_manifest_map[("PyPI", pkg)] = (ver, p)
                 break
 
-        # Scan package.json
         for p in ["package.json", "sentinelops/sentinelops-app/services/frontend/package.json"]:
-            pkg_content = await fetch_github_file(client, owner, repo, branch, p)
-            if pkg_content:
-                for pkg, ver in parse_package_json(pkg_content):
+            if p in file_map:
+                for pkg, ver in parse_package_json(file_map[p]):
                     queries.append({"package": {"name": pkg, "ecosystem": "npm"}, "version": ver})
                     pkg_manifest_map[("npm", pkg)] = (ver, p)
                 break
 
-        # 4. Realtime OSV.dev CVE Database Query
+        # 4. Realtime OSV.dev CVE Database Query with In-Memory Caching
         if queries:
-            try:
-                batch_payload = {"queries": queries[:40]}
-                osv_resp = await client.post(OSV_QUERYBATCH_URL, json=batch_payload, timeout=12.0)
-                if osv_resp.status_code == 200:
-                    results = osv_resp.json().get("results", [])
-                    for i, res in enumerate(results):
-                        vulns = res.get("vulns", [])
-                        if not vulns:
-                            continue
-                        orig = queries[i]
-                        pkg_name = orig["package"]["name"]
-                        eco = orig["package"]["ecosystem"]
-                        installed_ver, filepath = pkg_manifest_map.get((eco, pkg_name), (orig["version"], "manifest"))
+            cache_key = json.dumps(
+                [f"{q['package']['ecosystem']}:{q['package']['name']}:{q['version']}" for q in queries[:40]],
+                sort_keys=True
+            )
+            results = None
+            if cache_key in _osv_cache:
+                results = _osv_cache[cache_key]
+            else:
+                try:
+                    batch_payload = {"queries": queries[:40]}
+                    osv_resp = await client.post(OSV_QUERYBATCH_URL, json=batch_payload, timeout=5.0)
+                    if osv_resp.status_code == 200:
+                        results = osv_resp.json().get("results", [])
+                        _osv_cache[cache_key] = results
+                except Exception:
+                    pass
 
-                        for v in vulns[:2]:
-                            cve_id = v.get("id", "UNKNOWN-CVE")
-                            aliases = v.get("aliases", [])
-                            primary_id = aliases[0] if aliases else cve_id
-                            severity = extract_severity(v)
-                            fixed_in = extract_fixed_version(v)
-                            summary = v.get("summary") or v.get("details", "")[:130]
+            if results:
+                for i, res in enumerate(results):
+                    vulns = res.get("vulns", [])
+                    if not vulns or i >= len(queries):
+                        continue
+                    orig = queries[i]
+                    pkg_name = orig["package"]["name"]
+                    eco = orig["package"]["ecosystem"]
+                    installed_ver, filepath = pkg_manifest_map.get((eco, pkg_name), (orig["version"], "manifest"))
 
-                            rem_cmd = f"pip install {pkg_name}>={fixed_in}" if eco == "PyPI" else f"npm install {pkg_name}@{fixed_in}"
-                            sugg = f"Upgrade {pkg_name} from {installed_ver} to {fixed_in} to mitigate {primary_id}. Run: `{rem_cmd}`"
+                    for v in vulns[:2]:
+                        cve_id = v.get("id", "UNKNOWN-CVE")
+                        aliases = v.get("aliases", [])
+                        primary_id = aliases[0] if aliases else cve_id
+                        severity = extract_severity(v)
+                        fixed_in = extract_fixed_version(v)
+                        summary = v.get("summary") or v.get("details", "")[:130]
 
-                            vulnerabilities.append({
-                                "id": primary_id,
-                                "aliases": [cve_id] + [a for a in aliases if a != primary_id],
-                                "workload": filepath,
-                                "package": pkg_name,
-                                "installed_version": installed_ver,
-                                "severity": severity,
-                                "fixed_in": fixed_in,
-                                "summary": summary,
-                                "suggestion": sugg,
-                                "remediation_cmd": rem_cmd,
-                            })
-                            suggestions.append({
-                                "target": pkg_name,
-                                "issue": primary_id,
-                                "severity": severity,
-                                "action": sugg,
-                                "command": rem_cmd,
-                            })
-            except Exception:
-                pass
+                        rem_cmd = f"pip install {pkg_name}>={fixed_in}" if eco == "PyPI" else f"npm install {pkg_name}@{fixed_in}"
+                        sugg = f"Upgrade {pkg_name} from {installed_ver} to {fixed_in} to mitigate {primary_id}. Run: `{rem_cmd}`"
+
+                        vulnerabilities.append({
+                            "id": primary_id,
+                            "aliases": [cve_id] + [a for a in aliases if a != primary_id],
+                            "workload": filepath,
+                            "package": pkg_name,
+                            "installed_version": installed_ver,
+                            "severity": severity,
+                            "fixed_in": fixed_in,
+                            "summary": summary,
+                            "suggestion": sugg,
+                            "remediation_cmd": rem_cmd,
+                        })
+                        suggestions.append({
+                            "target": pkg_name,
+                            "issue": primary_id,
+                            "severity": severity,
+                            "action": sugg,
+                            "command": rem_cmd,
+                        })
 
         # 5. Check Dockerfile
         for df_path in ["Dockerfile", "sentinelops/sentinelops-app/services/catalog/Dockerfile"]:
-            df_content = await fetch_github_file(client, owner, repo, branch, df_path)
-            if df_content:
+            if df_path in file_map:
+                df_content = file_map[df_path]
                 has_user = any(line.strip().startswith("USER") and "root" not in line.lower() for line in df_content.splitlines())
                 if not has_user:
                     vulnerabilities.append({
@@ -396,10 +441,9 @@ async def run_security_pipeline(repo_url: str, branch: str = "main", deploy_targ
                         "suggestion": "Add dedicated non-root user in Dockerfile: RUN groupadd -r app && useradd -r -g app app followed by USER app",
                         "remediation_cmd": "RUN groupadd -r app && useradd -r -g app app\nUSER app",
                     })
+                break
 
         # 6. Render Cloud deployment resolution
-        render_live_url = None
-        render_deploy_id = None
         if "render" in (deploy_target or "pages").lower():
             render_live_url, render_deploy_id = await sync_render_deployment(client, repo, repo_url)
 
