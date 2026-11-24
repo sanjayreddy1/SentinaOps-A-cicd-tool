@@ -12,6 +12,7 @@ import ChaosLab from "./screens/ChaosLab";
 import AuditLog from "./screens/AuditLog";
 import Shop from "./screens/Shop";
 import GitHubFeed from "./screens/GitHubFeed";
+import History from "./screens/History";
 
 type Screen =
   | "login"
@@ -19,6 +20,7 @@ type Screen =
   | "shop"
   | "github"
   | "deployments"
+  | "history"
   | "security"
   | "incidents"
   | "costs"
@@ -30,6 +32,7 @@ const NAV: { id: Screen; label: string; icon: string }[] = [
   { id: "shop", label: "Shop", icon: "🛒" },
   { id: "github", label: "GitHub", icon: "⚡" },
   { id: "deployments", label: "Deployments", icon: "🚀" },
+  { id: "history", label: "History", icon: "📜" },
   { id: "security", label: "Security", icon: "🛡️" },
   { id: "incidents", label: "Incidents", icon: "🔥" },
   { id: "costs", label: "Costs", icon: "💰" },
@@ -43,6 +46,7 @@ const SCREEN_TITLES: Record<Screen, string> = {
   shop: "Shop",
   github: "GitHub",
   deployments: "Deployments",
+  history: "Deployment History",
   security: "Security Center",
   incidents: "Incidents",
   costs: "Costs",
@@ -169,6 +173,7 @@ export default function App() {
           {screen === "shop" && <Shop onBack={() => setScreen("overview")} />}
           {screen === "github" && <GitHubFeed />}
           {screen === "deployments" && <Deployments />}
+          {screen === "history" && <History />}
           {screen === "security" && <SecurityCenter />}
           {screen === "incidents" && <Incidents />}
           {screen === "costs" && <Costs />}

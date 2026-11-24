@@ -43,6 +43,7 @@ export default function Deployments() {
   const queryClient = useQueryClient();
   const [repoUrl, setRepoUrl] = useState("https://github.com/sanjayreddy1/SentinaOps-A-cicd-tool");
   const [branch, setBranch] = useState("main");
+  const [deployTarget, setDeployTarget] = useState<"pages" | "render">("pages");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Fetch current deployments from API
@@ -86,11 +87,11 @@ export default function Deployments() {
 
   // Mutation to trigger real-time pipeline run
   const pipelineMutation = useMutation({
-    mutationFn: async ({ repo, br }: { repo: string; br: string }) => {
+    mutationFn: async ({ repo, br, target }: { repo: string; br: string; target: string }) => {
       const res = await fetch("/api/pipeline/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repo_url: repo, branch: br, deploy_target: "cloud" }),
+        body: JSON.stringify({ repo_url: repo, branch: br, deploy_target: target }),
       });
       if (!res.ok) throw new Error("Pipeline run failed");
       return await res.json();
@@ -98,6 +99,7 @@ export default function Deployments() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["deployments"] });
       queryClient.invalidateQueries({ queryKey: ["pipeline-latest"] });
+      queryClient.invalidateQueries({ queryKey: ["pipeline-history"] });
       queryClient.invalidateQueries({ queryKey: ["vulnerabilities"] });
     },
   });
@@ -159,11 +161,11 @@ export default function Deployments() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            pipelineMutation.mutate({ repo: repoUrl, br: branch });
+            pipelineMutation.mutate({ repo: repoUrl, br: branch, target: deployTarget });
           }}
           style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "flex-end" }}
         >
-          <div style={{ flex: "1 1 320px" }}>
+          <div style={{ flex: "1 1 300px" }}>
             <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", marginBottom: "0.35rem" }}>
               GitHub Repository URL or owner/repo
             </label>
@@ -177,7 +179,7 @@ export default function Deployments() {
             />
           </div>
 
-          <div style={{ width: "120px" }}>
+          <div style={{ width: "110px" }}>
             <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", marginBottom: "0.35rem" }}>
               Branch
             </label>
@@ -188,6 +190,21 @@ export default function Deployments() {
               onChange={(e) => setBranch(e.target.value)}
               placeholder="main"
             />
+          </div>
+
+          <div style={{ width: "170px" }}>
+            <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", marginBottom: "0.35rem" }}>
+              Deployment Target
+            </label>
+            <select
+              className="input"
+              value={deployTarget}
+              onChange={(e) => setDeployTarget(e.target.value as "pages" | "render")}
+              style={{ background: "#0a0f24", color: "#f8fafc" }}
+            >
+              <option value="pages">🌐 GitHub Pages</option>
+              <option value="render">☁️ Render Cloud</option>
+            </select>
           </div>
 
           <button
@@ -202,7 +219,7 @@ export default function Deployments() {
               </>
             ) : (
               <>
-                <span>🚀</span> Scan &amp; Deploy to Cloud
+                <span>🚀</span> Scan &amp; Deploy to {deployTarget === "render" ? "Render" : "GitHub Pages"}
               </>
             )}
           </button>
