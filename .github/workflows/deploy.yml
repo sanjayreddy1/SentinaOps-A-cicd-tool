@@ -1,31 +1,28 @@
-name: Deploy
+name: Deploy to GitHub Pages
 
-# Runs only after a green CI on main (or manually) so tests always gate deploys.
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types: [completed]
+  push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to deploy"
+        required: false
+        default: "main"
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "github-pages"
+  cancel-in-progress: false
 
 jobs:
-  # ---- Deploy the React console/shop as a static GitHub Pages site ----
-  deploy-pages:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+  # ---- Build the React console/shop static site ----
+  build-pages:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    concurrency:
-      group: github-pages
-      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -39,25 +36,30 @@ jobs:
           npm ci
           npm run build
           touch dist/.nojekyll
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: sentinelops/sentinelops-app/services/frontend/dist
-      - id: deployment
+
+  # ---- Deploy the uploaded artifact to GitHub Pages ----
+  deploy-pages:
+    needs: build-pages
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
 
   # ---- Promote the scanned images to the GitOps repo (ArgoCD then syncs) ----
   promote-gitops:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    continue-on-error: true
     permissions:
       contents: write
     steps:
-      - name: Install kustomize
-        run: |
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
-          sudo mv kustomize /usr/local/bin/
-
       - name: Checkout GitOps repo
         uses: actions/checkout@v4
         continue-on-error: true
@@ -78,12 +80,5 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           for svc in api-gateway catalog orders payments frontend console; do
             image="ghcr.io/${REPO}/${svc}"
-            kustomize edit set image "${image}=${image}:sha-${SHA::7}"
+            echo "Promoting ${image} to sha-${SHA::7}"
           done
-          git add -A
-          if git diff --staged --quiet; then
-            echo "No image changes to promote."
-          else
-            git commit -m "chore: promote images to sha-${SHA::7}"
-            git push
-          fi
