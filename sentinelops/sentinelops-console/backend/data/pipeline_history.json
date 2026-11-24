@@ -1,5 +1,43 @@
 [
   {
+    "run_id": "run-sanjusportfolio-master-20261124-173928",
+    "app_name": "sanjusportfolio",
+    "repo_url": "https://github.com/sanjayreddy1/sanjusportfolio",
+    "owner": "sanjayreddy1",
+    "repo": "sanjusportfolio",
+    "branch": "master",
+    "commit_sha": "master-head",
+    "status": "passed",
+    "scanned_at": "2026-11-24T17:39:45.146408+00:00",
+    "summary": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "total": 0
+    },
+    "vulnerabilities": [],
+    "suggestions": [
+      {
+        "target": "Render Cloud Deployment",
+        "issue": "RENDER-DEPLOY-LIVE",
+        "severity": "LOW",
+        "action": "Live Render web service provisioned at https://sanjusportfolio.onrender.com. Triggered deployment on Render API (Deploy ID: dep-dc2snnutlv9c73924nig).",
+        "command": "curl -I https://sanjusportfolio.onrender.com"
+      }
+    ],
+    "policy_violations": [],
+    "deployment": {
+      "status": "Live",
+      "environment": "Render Cloud (Production Web Service)",
+      "live_url": "https://sanjusportfolio.onrender.com",
+      "report_url": "/api/pipeline/report/run-sanjusportfolio-master-20261124-173928",
+      "cloud_provider": "Render Cloud Platform",
+      "deployed_at": "2026-11-24T17:39:45.146408+00:00",
+      "rollout_state": "Render Deploy Active (dep-dc2snnut)"
+    }
+  },
+  {
     "run_id": "run-sanjusportfolio-master-20261124-171706",
     "app_name": "sanjusportfolio",
     "repo_url": "https://github.com/sanjayreddy1/sanjusportfolio",
