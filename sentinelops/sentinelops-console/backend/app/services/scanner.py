@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -17,6 +18,8 @@ import asyncio
 
 OSV_QUERYBATCH_URL = "https://api.osv.dev/v1/querybatch"
 _osv_cache: dict[str, list[dict[str, Any]]] = {}
+_render_services_cache: list[dict[str, Any]] = []
+_render_cache_time: float = 0.0
 
 RENDER_API_KEY = os.getenv("RENDER_API_KEY", "rnd_zsr8G3W2xtHubbah5ppvu0qbqTA8")
 RENDER_OWNER_ID = os.getenv("RENDER_OWNER_ID", "tea-d92u0u5aeets73amq8v0")
@@ -26,6 +29,8 @@ async def sync_render_deployment(
     client: httpx.AsyncClient, repo_name: str, repo_url: str
 ) -> tuple[str, str | None]:
     """Query Render API to resolve the live service URL and trigger an on-demand deploy."""
+    global _render_services_cache, _render_cache_time
+
     headers = {
         "Authorization": f"Bearer {RENDER_API_KEY}",
         "Accept": "application/json",
@@ -35,38 +40,44 @@ async def sync_render_deployment(
     resolved_url = f"https://{repo_name.lower()}.onrender.com"
     deploy_id = None
 
-    try:
-        resp = await client.get("https://api.render.com/v1/services?limit=50", headers=headers, timeout=8.0)
-        if resp.status_code == 200:
-            services = resp.json()
-            for item in services:
-                svc = item.get("service", {})
-                s_name = svc.get("name", "").lower().replace("-", "").replace("_", "")
-                s_repo = svc.get("repo", "").lower()
+    services = _render_services_cache
+    now = time.time()
+    if not services or (now - _render_cache_time > 120.0):
+        try:
+            resp = await client.get("https://api.render.com/v1/services?limit=50", headers=headers, timeout=4.0)
+            if resp.status_code == 200:
+                services = resp.json()
+                _render_services_cache = services
+                _render_cache_time = now
+        except Exception:
+            pass
 
-                if (target_clean and (target_clean in s_name or s_name in target_clean)) or (repo_name.lower() in s_repo):
-                    service_id = svc.get("id")
-                    candidate_url = svc.get("serviceDetails", {}).get("url")
-                    if candidate_url:
-                        resolved_url = candidate_url
+    for item in services:
+        svc = item.get("service", {})
+        s_name = svc.get("name", "").lower().replace("-", "").replace("_", "")
+        s_repo = svc.get("repo", "").lower()
 
-                    # Trigger fresh deployment via Render API
-                    if service_id:
-                        try:
-                            dep_resp = await client.post(
-                                f"https://api.render.com/v1/services/{service_id}/deploys",
-                                headers=headers,
-                                json={"clearCache": "do_not_clear"},
-                                timeout=8.0,
-                            )
-                            if dep_resp.status_code in (200, 201):
-                                dep_data = dep_resp.json()
-                                deploy_id = dep_data.get("id")
-                        except Exception:
-                            pass
-                    break
-    except Exception:
-        pass
+        if (target_clean and (target_clean in s_name or s_name in target_clean)) or (repo_name.lower() in s_repo):
+            service_id = svc.get("id")
+            candidate_url = svc.get("serviceDetails", {}).get("url")
+            if candidate_url:
+                resolved_url = candidate_url
+
+            # Trigger fresh deployment via Render API
+            if service_id:
+                try:
+                    dep_resp = await client.post(
+                        f"https://api.render.com/v1/services/{service_id}/deploys",
+                        headers=headers,
+                        json={"clearCache": "do_not_clear"},
+                        timeout=3.0,
+                    )
+                    if dep_resp.status_code in (200, 201):
+                        dep_data = dep_resp.json()
+                        deploy_id = dep_data.get("id")
+                except Exception:
+                    pass
+            break
 
     return resolved_url, deploy_id
 
@@ -251,22 +262,23 @@ def scan_for_leaked_secrets(content: str, filename: str) -> list[dict[str, Any]]
 
 async def fetch_github_file(client: httpx.AsyncClient, owner: str, repo: str, branch: str, filepath: str) -> str | None:
     """Fetch raw file from GitHub on the given branch with high-speed timeout."""
-    candidate_branches = [branch]
-    if branch.lower() not in ("main", "master"):
-        candidate_branches.append("main")
-    elif branch.lower() == "main":
-        candidate_branches.append("master")
-    else:
-        candidate_branches.append("main")
+    url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{filepath}"
+    try:
+        resp = await client.get(url, timeout=2.0)
+        if resp.status_code == 200:
+            return resp.text
+    except Exception:
+        pass
 
-    for br in candidate_branches:
-        url = f"https://raw.githubusercontent.com/{owner}/{repo}/{br}/{filepath}"
+    # Quick fallback if custom branch wasn't main or master
+    if branch.lower() not in ("main", "master"):
+        fallback_url = f"https://raw.githubusercontent.com/{owner}/{repo}/main/{filepath}"
         try:
-            resp = await client.get(url, timeout=3.5)
+            resp = await client.get(fallback_url, timeout=1.5)
             if resp.status_code == 200:
                 return resp.text
         except Exception:
-            continue
+            pass
     return None
 
 
@@ -295,22 +307,19 @@ async def run_security_pipeline(repo_url: str, branch: str = "main", deploy_targ
     rollout_state: str = "Canary (100% Synced)"
 
     async with httpx.AsyncClient(headers=headers, follow_redirects=True) as client:
-        # 1. Concurrently fetch commit SHA and all repository manifests
-        candidate_files = [
-            ".env",
-            ".env.local",
-            "requirements.txt",
-            "package.json",
-            "Dockerfile",
-            "sentinelops/sentinelops-app/services/catalog/requirements.txt",
-            "sentinelops/sentinelops-app/services/frontend/package.json",
-            "sentinelops/sentinelops-app/services/catalog/Dockerfile",
-        ]
+        # 1. Concurrently fetch commit SHA, files, and Render deployment in parallel
+        candidate_files = [".env", "requirements.txt", "package.json", "Dockerfile"]
+        if "sentin" in repo.lower():
+            candidate_files.extend([
+                "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+                "sentinelops/sentinelops-app/services/frontend/package.json",
+                "sentinelops/sentinelops-app/services/catalog/Dockerfile",
+            ])
 
         async def _fetch_commit() -> str:
             try:
                 repo_api = f"https://api.github.com/repos/{owner}/{repo}/commits/{branch}"
-                resp = await client.get(repo_api, timeout=4.0)
+                resp = await client.get(repo_api, timeout=2.5)
                 if resp.status_code == 200:
                     sha = resp.json().get("sha", "")
                     return sha[:7] if sha else f"{branch}-head"
@@ -318,16 +327,27 @@ async def run_security_pipeline(repo_url: str, branch: str = "main", deploy_targ
                 pass
             return f"{branch}-head"
 
+        async def _resolve_render() -> tuple[str | None, str | None]:
+            if "render" in (deploy_target or "pages").lower():
+                return await sync_render_deployment(client, repo, repo_url)
+            return None, None
+
         commit_task = _fetch_commit()
+        render_task = _resolve_render()
         file_tasks = [fetch_github_file(client, owner, repo, branch, fp) for fp in candidate_files]
 
-        all_results = await asyncio.gather(commit_task, *file_tasks, return_exceptions=True)
+        all_results = await asyncio.gather(commit_task, render_task, *file_tasks, return_exceptions=True)
+        
         commit_res = all_results[0]
         if isinstance(commit_res, str):
             commit_sha = commit_res
 
+        render_res = all_results[1]
+        if isinstance(render_res, tuple) and len(render_res) == 2:
+            render_live_url, render_deploy_id = render_res
+
         file_map: dict[str, str] = {}
-        for fp, res in zip(candidate_files, all_results[1:]):
+        for fp, res in zip(candidate_files, all_results[2:]):
             if isinstance(res, str) and res:
                 file_map[fp] = res
 
@@ -375,7 +395,7 @@ async def run_security_pipeline(repo_url: str, branch: str = "main", deploy_targ
             else:
                 try:
                     batch_payload = {"queries": queries[:40]}
-                    osv_resp = await client.post(OSV_QUERYBATCH_URL, json=batch_payload, timeout=5.0)
+                    osv_resp = await client.post(OSV_QUERYBATCH_URL, json=batch_payload, timeout=3.5)
                     if osv_resp.status_code == 200:
                         results = osv_resp.json().get("results", [])
                         _osv_cache[cache_key] = results
@@ -442,10 +462,6 @@ async def run_security_pipeline(repo_url: str, branch: str = "main", deploy_targ
                         "remediation_cmd": "RUN groupadd -r app && useradd -r -g app app\nUSER app",
                     })
                 break
-
-        # 6. Render Cloud deployment resolution
-        if "render" in (deploy_target or "pages").lower():
-            render_live_url, render_deploy_id = await sync_render_deployment(client, repo, repo_url)
 
     # 7. Severity counts
     counts = {"critical": 0, "high": 0, "medium": 0, "low": 0}

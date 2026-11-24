@@ -1,5 +1,81 @@
 [
   {
+    "run_id": "run-sanjusportfolio-master-20261124-175302",
+    "app_name": "sanjusportfolio",
+    "repo_url": "https://github.com/sanjayreddy1/sanjusportfolio",
+    "owner": "sanjayreddy1",
+    "repo": "sanjusportfolio",
+    "branch": "master",
+    "commit_sha": "master-head",
+    "status": "passed",
+    "scanned_at": "2026-11-24T17:53:05.801364+00:00",
+    "summary": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "total": 0
+    },
+    "vulnerabilities": [],
+    "suggestions": [
+      {
+        "target": "GitHub Pages Deployment",
+        "issue": "GITHUB-PAGES-SETUP",
+        "severity": "LOW",
+        "action": "GitHub Pages URL provisioned at https://sanjayreddy1.github.io/sanjusportfolio/. If GitHub displays 404, verify Pages is enabled under Repo Settings > Pages > Source > Deploy from a branch (or switch deployment target to Render Cloud).",
+        "command": "echo 'GitHub Pages target: https://sanjayreddy1.github.io/sanjusportfolio/'"
+      }
+    ],
+    "policy_violations": [],
+    "deployment": {
+      "status": "Live",
+      "environment": "GitHub Pages (Production)",
+      "live_url": "https://sanjayreddy1.github.io/sanjusportfolio/",
+      "report_url": "/api/pipeline/report/run-sanjusportfolio-master-20261124-175302",
+      "cloud_provider": "GitHub Pages & Actions",
+      "deployed_at": "2026-11-24T17:53:05.801364+00:00",
+      "rollout_state": "Canary (100% Synced)"
+    }
+  },
+  {
+    "run_id": "run-sanjusportfolio-master-20261124-175246",
+    "app_name": "sanjusportfolio",
+    "repo_url": "https://github.com/sanjayreddy1/sanjusportfolio",
+    "owner": "sanjayreddy1",
+    "repo": "sanjusportfolio",
+    "branch": "master",
+    "commit_sha": "master-head",
+    "status": "passed",
+    "scanned_at": "2026-11-24T17:52:48.098974+00:00",
+    "summary": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "total": 0
+    },
+    "vulnerabilities": [],
+    "suggestions": [
+      {
+        "target": "Render Cloud Deployment",
+        "issue": "RENDER-DEPLOY-LIVE",
+        "severity": "LOW",
+        "action": "Live Render web service provisioned at https://sanjusportfolio.onrender.com. Triggered deployment on Render API (Deploy ID: dep-dc2strjncjis73dtdh20).",
+        "command": "curl -I https://sanjusportfolio.onrender.com"
+      }
+    ],
+    "policy_violations": [],
+    "deployment": {
+      "status": "Live",
+      "environment": "Render Cloud (Production Web Service)",
+      "live_url": "https://sanjusportfolio.onrender.com",
+      "report_url": "/api/pipeline/report/run-sanjusportfolio-master-20261124-175246",
+      "cloud_provider": "Render Cloud Platform",
+      "deployed_at": "2026-11-24T17:52:48.098974+00:00",
+      "rollout_state": "Render Deploy Active (dep-dc2strjn)"
+    }
+  },
+  {
     "run_id": "run-sentinaops-a-cicd-tool-main-20261124-174727",
     "app_name": "SentinaOps-A-cicd-tool",
     "repo_url": "https://github.com/sanjayreddy1/SentinaOps-A-cicd-tool",
