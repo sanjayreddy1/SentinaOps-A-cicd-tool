@@ -1,0 +1,22 @@
+services:
+  # Render Static Site Deployment (Supports publish directory ./dist or ./build)
+  - type: web
+    name: sentinaops-web
+    runtime: static
+    buildCommand: npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  # Render Cloud Web Service (Backend Console API)
+  - type: web
+    name: sentinaops-api
+    runtime: python
+    buildCommand: pip install -r sentinelops/sentinelops-console/backend/requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    rootDir: sentinelops/sentinelops-console/backend
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12

@@ -179,8 +179,11 @@ The user can select their preferred deployment target on the Deployments page:
    - Ideal for static single-page applications, documentation, portfolios, and React/Vue/HTML websites.
    - Deployed on-demand without predeployment.
    - Note on GitHub Pages: GitHub Pages requires that the target repository has Pages enabled on GitHub (`Settings` → `Pages` → `Source: Deploy from a branch` or `GitHub Actions`). If a repository has not enabled Pages on GitHub, visiting the URL will return GitHub's standard 404 page until enabled.
-2. **☁️ Render Cloud Web Service (`https://<repo>-prod.onrender.com`):**
-   - Ideal for containerized microservices, Python/Flask/FastAPI backends, Node.js servers, and full-stack applications.
+2. **☁️ Render Cloud Web Service & Static Site (`https://<repo>-prod.onrender.com`):**
+   - Supports both containerized microservices and automated static deployments.
+   - **Render Folder Structure Compatibility:** The repository root is configured with a root `package.json`, `render.yaml`, and dual output directories (`dist/` and `build/`).
+   - Whether Render is configured with `Publish directory: dist` or `Publish directory: build`, both are fully built and synchronized.
+   - Includes automatic SPA rewrites via `_redirects` (`/* /index.html 200`) to guarantee zero 404 errors on browser page reloads.
    - Provides an instant, publicly accessible HTTPS cloud web service URL.
 
 ---

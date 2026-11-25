@@ -4,7 +4,7 @@ node_modules/
 .pnp.js
 
 # Testing and build artifacts
-dist/
+# dist/ and build/ are tracked for seamless Render static deployments
 coverage/
 coverage.out
 .pytest_cache/
