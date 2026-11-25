@@ -34,8 +34,8 @@ SentinelOps Platform Architecture and Operational Protocols:
    - api-gateway (Port 8000): FastAPI / Envoy edge reverse proxy with rate limiting, JWT validation.
    - catalog (Port 8001): Product catalog with FastAPI + PostgreSQL 16 (pgvector).
    - orders (Port 8002): Order lifecycle engine with Express.js + MongoDB.
-   - payments (Port 8003): Stripe Sandbox Node.js integration with webhook listener.
-   - frontend (Port 5173 / GitHub Pages): React 19 + Vite 6 + Tailwind CSS, white background theme, live preview engine.
+   - payments (Port 8003): Stripe Sandbox Node.js integration with webhook listener in INR.
+   - frontend (Port 5173 / GitHub Pages): React 19 + Vite 6 + Tailwind CSS, white background theme, pure black text, live preview engine.
    - console (Port 8000 /api): Management backend orchestrating scanner.py, Render API deploys, audit logs.
    - incident-engine (Port 8004): PagerDuty / Slack webhook automation and canary auto-rollback.
    - chaos-runner (Port 8005): Fault injection runner with Chaos Mesh (pod kill, 200ms latency, CPU stress).
@@ -56,16 +56,19 @@ SentinelOps Platform Architecture and Operational Protocols:
 6. GitOps & Canary:
    - ArgoCD tracks sentinelops-gitops/workloads/overlays/dev.
    - Canary progression: 10% -> 30% -> 60% -> 100% with automated rollback on error rate > 1%.
+7. FinOps & Cost Management in INR:
+   - Monthly baseline spend: 235,000 INR/month across compute, storage, and networking.
+   - Right-sizing savings: 35,000 INR/month via idle node downscaling and spot instances.
 """
 
 
 @router.post("/query")
 async def chat_query(req: ChatQueryRequest) -> dict[str, Any]:
-    """Execute RAG augmented query using Groq API."""
+    """Execute RAG augmented query using Groq API without asterisks in response."""
     messages = [
         {
             "role": "system",
-            "content": f"You are SentinelOps AI Assistant, an expert DevSecOps and SRE engineer. Answer accurately using this platform documentation:\n{PLATFORM_KNOWLEDGE}"
+            "content": f"You are SentinelOps AI Assistant, an expert DevSecOps and SRE engineer. Answer accurately using this platform documentation:\n{PLATFORM_KNOWLEDGE}\nCRITICAL: Do NOT use markdown bold syntax (asterisks like **bold**) anywhere in your response. Write completely clean plain text without any ** symbols. All currency must be in INR text."
         }
     ]
 
@@ -96,11 +99,13 @@ async def chat_query(req: ChatQueryRequest) -> dict[str, Any]:
         with urllib.request.urlopen(request, timeout=10) as resp:
             body = json.loads(resp.read().decode("utf-8"))
             answer = body.get("choices", [{}])[0].get("message", {}).get("content", "")
-            return {"answer": answer, "model": PRIMARY_MODEL, "status": "ok"}
+            clean_answer = answer.replace("**", "")
+            return {"answer": clean_answer, "model": PRIMARY_MODEL, "status": "ok"}
     except Exception as e:
-        # Fallback to secondary model or local knowledge summary
+        # Fallback to secondary model or local knowledge summary stripped of **
+        clean_fallback = PLATFORM_KNOWLEDGE.replace("**", "")
         return {
-            "answer": f"SentinelOps Platform Information:\n{PLATFORM_KNOWLEDGE}",
+            "answer": f"SentinelOps Platform Information:\n{clean_fallback}",
             "model": "local-rag",
             "status": "fallback",
             "error": str(e),

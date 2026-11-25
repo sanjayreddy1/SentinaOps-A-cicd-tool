@@ -39,8 +39,8 @@ const kpiCards = (data: any) => [
   },
   {
     label: "Monthly Cost",
-    value: data ? `$${data.monthly_cost}` : "—",
-    sub: "USD this month",
+    value: data ? `${data.monthly_cost} INR` : "—",
+    sub: "INR this month",
     trend: "↓",
     trendColor: "#a855f7",
     borderColor: "#a855f7",
@@ -131,14 +131,14 @@ export default function Overview() {
           <h2
             style={{
               fontSize: "1.5rem",
-              fontWeight: 700,
-              color: "#e2e8f0",
+              fontWeight: 800,
+              color: "#000000",
               margin: 0,
             }}
           >
             Platform Overview
           </h2>
-          <p style={{ marginTop: "0.25rem", fontSize: "0.875rem", color: "#64748b" }}>
+          <p style={{ marginTop: "0.25rem", fontSize: "0.875rem", fontWeight: 600, color: "#000000" }}>
             Live cluster health, deploy, incident and cost signals.
           </p>
         </div>

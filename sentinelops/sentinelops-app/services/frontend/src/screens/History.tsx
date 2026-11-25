@@ -80,10 +80,10 @@ export default function History() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem", marginBottom: "1.5rem" }}>
         <div>
-          <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#ffffff", margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#000000", margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <span>📜</span> Deployed Apps &amp; Security Reports History
           </h2>
-          <p style={{ marginTop: "0.35rem", fontSize: "0.875rem", color: "#94a3b8" }}>
+          <p style={{ marginTop: "0.35rem", fontSize: "0.875rem", fontWeight: 600, color: "#000000" }}>
             All applications deployed on-demand via SentinelOps with live URLs, branches, and full security check reports.
           </p>
         </div>
@@ -95,28 +95,28 @@ export default function History() {
           placeholder="Filter by app name, branch, or status..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ maxWidth: "300px" }}
+          style={{ maxWidth: "300px", color: "#000000", background: "#ffffff", borderColor: "#000000" }}
         />
       </div>
 
       {/* History Table */}
-      <div className="card" style={{ padding: 0, overflow: "hidden", borderTop: "3px solid #4169E1" }}>
+      <div className="card" style={{ padding: 0, overflow: "hidden", borderTop: "3px solid #2563eb", background: "#ffffff", border: "1px solid #cbd5e1" }}>
         <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem", color: "#000000" }}>
             <thead>
-              <tr style={{ background: "rgba(14, 21, 48, 0.95)", borderBottom: "1px solid var(--border)" }}>
-                <th style={{ padding: "0.85rem 1rem", textAlign: "left", fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", textTransform: "uppercase" }}>App Name</th>
-                <th style={{ padding: "0.85rem 1rem", textAlign: "left", fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", textTransform: "uppercase" }}>Repository &amp; Branch</th>
-                <th style={{ padding: "0.85rem 1rem", textAlign: "left", fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", textTransform: "uppercase" }}>Deployed App Link</th>
-                <th style={{ padding: "0.85rem 1rem", textAlign: "left", fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", textTransform: "uppercase" }}>Deployed On Time</th>
-                <th style={{ padding: "0.85rem 1rem", textAlign: "left", fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", textTransform: "uppercase" }}>Security Status</th>
-                <th style={{ padding: "0.85rem 1rem", textAlign: "center", fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", textTransform: "uppercase" }}>Report</th>
+              <tr style={{ background: "#f1f5f9", borderBottom: "2px solid #cbd5e1" }}>
+                <th style={{ padding: "0.85rem 1rem", textAlign: "left", fontSize: "0.75rem", fontWeight: 800, color: "#000000", textTransform: "uppercase" }}>App Name</th>
+                <th style={{ padding: "0.85rem 1rem", textAlign: "left", fontSize: "0.75rem", fontWeight: 800, color: "#000000", textTransform: "uppercase" }}>Repository &amp; Branch</th>
+                <th style={{ padding: "0.85rem 1rem", textAlign: "left", fontSize: "0.75rem", fontWeight: 800, color: "#000000", textTransform: "uppercase" }}>Deployed App Link</th>
+                <th style={{ padding: "0.85rem 1rem", textAlign: "left", fontSize: "0.75rem", fontWeight: 800, color: "#000000", textTransform: "uppercase" }}>Deployed On Time</th>
+                <th style={{ padding: "0.85rem 1rem", textAlign: "left", fontSize: "0.75rem", fontWeight: 800, color: "#000000", textTransform: "uppercase" }}>Security Status</th>
+                <th style={{ padding: "0.85rem 1rem", textAlign: "center", fontSize: "0.75rem", fontWeight: 800, color: "#000000", textTransform: "uppercase" }}>Report</th>
               </tr>
             </thead>
             <tbody>
               {filteredHistory.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: "2.5rem 1rem", textAlign: "center", color: "#94a3b8" }}>
+                  <td colSpan={6} style={{ padding: "2.5rem 1rem", textAlign: "center", color: "#000000", fontWeight: 600 }}>
                     {isLoading ? "Loading deployment history..." : "No deployed apps in history yet. Run a pipeline from Deployments to deploy on-demand."}
                   </td>
                 </tr>
@@ -125,12 +125,12 @@ export default function History() {
                   <tr
                     key={item.run_id || idx}
                     style={{
-                      background: idx % 2 === 0 ? "transparent" : "rgba(255, 255, 255, 0.02)",
-                      borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+                      background: idx % 2 === 0 ? "#ffffff" : "#f8fafc",
+                      borderBottom: "1px solid #e2e8f0",
                     }}
                   >
                     {/* App Name */}
-                    <td style={{ padding: "1rem", color: "#f8fafc", fontWeight: 700 }}>
+                    <td style={{ padding: "1rem", color: "#000000", fontWeight: 800 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
                         <span>📦</span> {item.app_name || item.repo}
                       </div>
@@ -210,7 +210,7 @@ export default function History() {
                     </td>
 
                     {/* Deployed Timestamp */}
-                    <td style={{ padding: "1rem", color: "#cbd5e1", fontSize: "0.8rem" }}>
+                    <td style={{ padding: "1rem", color: "#000000", fontSize: "0.8rem", fontWeight: 600 }}>
                       {formatDate(item.scanned_at || item.deployment?.deployed_at)}
                     </td>
 

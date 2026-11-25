@@ -132,13 +132,13 @@ export default function Deployments() {
   ];
 
   return (
-    <div style={{ padding: "1.5rem" }}>
+    <div style={{ padding: "1.5rem", color: "#000000" }}>
       {/* Page Header */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#e2e8f0", margin: 0 }}>
+        <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#000000", margin: 0 }}>
           CI/CD Pipeline &amp; Cloud Deployment
         </h2>
-        <p style={{ marginTop: "0.25rem", fontSize: "0.875rem", color: "#64748b" }}>
+        <p style={{ marginTop: "0.25rem", fontSize: "0.875rem", fontWeight: 600, color: "#000000" }}>
           Upload code on GitHub → Real-time Security Check (OSV/CVE) → Cloud Deployment with Live URL &amp; Fix Suggestions.
         </p>
       </div>
@@ -147,19 +147,23 @@ export default function Deployments() {
       <div
         className="card"
         style={{
-          borderTop: "3px solid #4169E1",
-          background: "linear-gradient(180deg, rgba(14, 21, 48, 0.95) 0%, rgba(7, 11, 26, 0.95) 100%)",
+          borderTop: "3px solid #2563eb",
+          background: "#ffffff",
+          border: "1px solid #cbd5e1",
+          borderTopWidth: "3px",
+          borderTopColor: "#2563eb",
           padding: "1.5rem",
           marginBottom: "1.75rem",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem", marginBottom: "1rem" }}>
           <div>
-            <h3 style={{ fontSize: "1.125rem", fontWeight: 700, color: "#ffffff", margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <h3 style={{ fontSize: "1.125rem", fontWeight: 800, color: "#000000", margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <span>⚡</span> Run Real-Time Pipeline
               <span className="live-dot" style={{ display: "inline-block" }} />
             </h3>
-            <p style={{ fontSize: "0.8rem", color: "#94a3b8", marginTop: "0.25rem" }}>
+            <p style={{ fontSize: "0.8rem", color: "#000000", fontWeight: 600, marginTop: "0.25rem" }}>
               Provide any GitHub repository and branch. The platform executes a real-time OSV security check, provides fix suggestions, and deploys directly to GitHub Pages.
             </p>
           </div>
@@ -174,7 +178,7 @@ export default function Deployments() {
           style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "flex-end" }}
         >
           <div style={{ flex: "1 1 280px" }}>
-            <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", marginBottom: "0.35rem" }}>
+            <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#000000", marginBottom: "0.35rem" }}>
               GitHub Repository URL or owner/repo
             </label>
             <input
@@ -184,11 +188,12 @@ export default function Deployments() {
               onChange={(e) => setRepoUrl(e.target.value)}
               placeholder="https://github.com/owner/repository"
               required
+              style={{ color: "#000000", background: "#ffffff", borderColor: "#000000" }}
             />
           </div>
 
           <div style={{ width: "100px" }}>
-            <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", marginBottom: "0.35rem" }}>
+            <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#000000", marginBottom: "0.35rem" }}>
               Branch
             </label>
             <input
@@ -197,18 +202,19 @@ export default function Deployments() {
               value={branch}
               onChange={(e) => setBranch(e.target.value)}
               placeholder="main"
+              style={{ color: "#000000", background: "#ffffff", borderColor: "#000000" }}
             />
           </div>
 
           <div style={{ width: "160px" }}>
-            <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", marginBottom: "0.35rem" }}>
+            <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#000000", marginBottom: "0.35rem" }}>
               Deployment Target
             </label>
             <select
               className="input"
               value={deployTarget}
               onChange={(e) => setDeployTarget(e.target.value as "pages" | "render")}
-              style={{ background: "#0a0f24", color: "#f8fafc" }}
+              style={{ background: "#ffffff", color: "#000000", borderColor: "#000000", fontWeight: 600 }}
             >
               <option value="pages">🌐 GitHub Pages</option>
               <option value="render">☁️ Render Cloud</option>
@@ -217,14 +223,14 @@ export default function Deployments() {
 
           {deployTarget === "render" && (
             <div style={{ width: "150px" }}>
-              <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#38bdf8", marginBottom: "0.35rem" }}>
+              <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#000000", marginBottom: "0.35rem" }}>
                 Publish Directory
               </label>
               <select
                 className="input"
                 value={publishDir}
                 onChange={(e) => setPublishDir(e.target.value as "dist" | "build")}
-                style={{ background: "#0a0f24", color: "#38bdf8", borderColor: "#38bdf8", fontWeight: 600 }}
+                style={{ background: "#ffffff", color: "#000000", borderColor: "#000000", fontWeight: 700 }}
               >
                 <option value="dist">📁 dist (Default)</option>
                 <option value="build">📁 build</option>
@@ -236,7 +242,7 @@ export default function Deployments() {
             type="submit"
             className="btn btn-primary"
             disabled={pipelineMutation.isPending}
-            style={{ minWidth: "220px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}
+            style={{ minWidth: "220px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", fontWeight: 700 }}
           >
             {pipelineMutation.isPending ? (
               <>
@@ -252,19 +258,19 @@ export default function Deployments() {
 
         {/* Pipeline Execution Stepper */}
         {pipelineMutation.isPending && (
-          <div style={{ marginTop: "1.25rem", padding: "1rem", background: "rgba(65, 105, 225, 0.08)", borderRadius: "8px", border: "1px solid rgba(65, 105, 225, 0.25)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
-              <span style={{ fontSize: "0.85rem", color: "#60a5fa", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+          <div style={{ marginTop: "1.25rem", padding: "1rem", background: "rgba(37, 99, 235, 0.08)", borderRadius: "8px", border: "1px solid rgba(37, 99, 235, 0.25)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap", fontWeight: 600, color: "#000000" }}>
+              <span style={{ fontSize: "0.85rem", color: "#000000", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                 <span>1. Ingesting GitHub Code</span> ✓
               </span>
               <span>→</span>
-              <span style={{ fontSize: "0.85rem", color: "#60a5fa", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              <span style={{ fontSize: "0.85rem", color: "#000000", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                 <span>2. Real-Time OSV/CVE Scan</span> <span className="live-dot" />
               </span>
               <span>→</span>
-              <span style={{ fontSize: "0.85rem", color: "#94a3b8" }}>3. Cloud Deployment</span>
+              <span style={{ fontSize: "0.85rem", color: "#000000" }}>3. Cloud Deployment</span>
               <span>→</span>
-              <span style={{ fontSize: "0.85rem", color: "#94a3b8" }}>4. Live Report &amp; Web Link</span>
+              <span style={{ fontSize: "0.85rem", color: "#000000" }}>4. Live Report &amp; Web Link</span>
             </div>
           </div>
         )}
@@ -275,13 +281,14 @@ export default function Deployments() {
         <div
           className="card"
           style={{
-            borderLeft: "4px solid #22c55e",
-            background: "rgba(34, 197, 94, 0.04)",
-            border: "1px solid rgba(34, 197, 94, 0.25)",
+            borderLeft: "4px solid #16a34a",
+            background: "#ffffff",
+            border: "1px solid #cbd5e1",
             borderLeftWidth: "4px",
-            borderLeftColor: currentPipeline.status === "blocked_by_security" ? "#ef4444" : "#22c55e",
+            borderLeftColor: currentPipeline.status === "blocked_by_security" ? "#dc2626" : "#16a34a",
             padding: "1.25rem 1.5rem",
             marginBottom: "1.75rem",
+            color: "#000000",
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
@@ -290,28 +297,28 @@ export default function Deployments() {
                 <span className={`badge ${badgeFor(currentPipeline.deployment.status)}`}>
                   {currentPipeline.deployment.status}
                 </span>
-                <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-                  Environment: <strong style={{ color: "#e2e8f0" }}>{currentPipeline.deployment.environment}</strong>
+                <span style={{ fontSize: "0.75rem", color: "#000000", fontWeight: 600 }}>
+                  Environment: <strong style={{ color: "#000000" }}>{currentPipeline.deployment.environment}</strong>
                 </span>
-                <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-                  Commit: <code style={{ color: "#60a5fa" }}>{currentPipeline.commit_sha}</code>
+                <span style={{ fontSize: "0.75rem", color: "#000000", fontWeight: 600 }}>
+                  Commit: <code style={{ color: "#000000", background: "#f1f5f9", padding: "1px 4px", borderRadius: "3px" }}>{currentPipeline.commit_sha}</code>
                 </span>
                 {currentPipeline.deployment.publish_directory && currentPipeline.deployment.publish_directory !== "root" && (
-                  <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-                    Publish Directory: <code style={{ color: "#38bdf8", background: "rgba(56, 189, 248, 0.1)", padding: "1px 5px", borderRadius: "3px" }}>{currentPipeline.deployment.publish_directory}</code>
+                  <span style={{ fontSize: "0.75rem", color: "#000000", fontWeight: 600 }}>
+                    Publish Directory: <code style={{ color: "#000000", background: "#f1f5f9", padding: "1px 5px", borderRadius: "3px" }}>{currentPipeline.deployment.publish_directory}</code>
                   </span>
                 )}
               </div>
-              <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: 0 }}>
+              <h3 style={{ fontSize: "1.1rem", fontWeight: 800, color: "#000000", margin: 0 }}>
                 Live Cloud Deployment &amp; Web Link
               </h3>
-              <p style={{ fontSize: "0.85rem", marginTop: "0.25rem" }}>
+              <p style={{ fontSize: "0.85rem", color: "#000000", fontWeight: 600, marginTop: "0.25rem" }}>
                 Application provisioned with guaranteed zero 404:{" "}
                 <a
                   href={currentPipeline.deployment.live_url}
                   target="_blank"
                   rel="noreferrer"
-                  style={{ color: "#2563eb", fontWeight: 600, textDecoration: "underline" }}
+                  style={{ color: "#2563eb", fontWeight: 700, textDecoration: "underline" }}
                 >
                   {currentPipeline.deployment.live_url}
                 </a>

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 
 // ============================================================================
-// SentinelOps Comprehensive Knowledge Base (RAG Chunks)
+// SentinelOps Comprehensive Knowledge Base (RAG Chunks) - All Currency in INR
 // ============================================================================
 
 interface KnowledgeChunk {
@@ -25,7 +25,7 @@ Key Capabilities:
 3. Render Cloud Deployment: Full Render REST API integration (Key: rnd_zsr8G3W2xtHubbah5ppvu0qbqTA8, Workspace: tea-d92u0u5aeets73amq8v0) with custom publish directory support (dist or build).
 4. Kyverno Admission Control & Sigstore Cosign: Validates container rootless UID (CIS-4.1) and enforces cryptographically signed image attestations.
 5. ArgoCD GitOps Canary Rollouts: Automated 10% -> 30% -> 60% -> 100% canary promotions with rollback on error budget depletion.
-6. FinOps & Chaos Lab: Real-time cloud spend tracking and fault injection experiments (pod kill, 200ms latency, CPU stress).`,
+6. FinOps & Chaos Lab: Real-time cloud spend tracking in INR and fault injection experiments (pod kill, 200ms latency, CPU stress).`,
   },
   {
     id: "microservices",
@@ -36,7 +36,7 @@ Key Capabilities:
 1. api-gateway (Port 8000): FastAPI / Envoy edge proxy. Handles rate-limiting, JWT authentication, and routing across internal services.
 2. catalog (Port 8001): Product & item catalog built with FastAPI + PostgreSQL 16 (pgvector). Exposes /api/catalog/items.
 3. orders (Port 8002): Order lifecycle manager running on Node.js/Express + MongoDB. Handles checkout and state machines.
-4. payments (Port 8003): Node.js Stripe Sandbox integration. Exposes /api/payments/webhook for verified asynchronous transactions.
+4. payments (Port 8003): Node.js Stripe Sandbox integration. Exposes /api/payments/webhook for verified asynchronous transactions in INR.
 5. frontend (Port 5173 / GitHub Pages): React 19 + Vite 6 + Tailwind CSS. Provides the white-theme console, live app runner, and RAG chatbot.
 6. console (Port 8000 /api): FastAPI administrative backend orchestrating scanner.py, Render API deploys, and audit logging.
 7. incident-engine (Port 8004): Python event handler integrating Prometheus Alertmanager, PagerDuty, and Slack. Auto-triggers canary rollbacks on P1 alerts.
@@ -51,7 +51,7 @@ Key Capabilities:
 1. The Problem: When arbitrary external repositories (e.g. sanjusportfolio on master branch) are deployed, opening https://<owner>.github.io/<repo>/ returns a 404 if GitHub Pages has not been toggled on in that repository's GitHub Settings.
 2. The Solution - Direct Live Runner: SentinelOps hosts an in-app guaranteed 200 OK Live Previewer directly at:
    https://sanjayreddy1.github.io/SentinaOps-A-cicd-tool/?app=<repo>&branch=<branch>&owner=<owner>
-3. Dynamic HTML Sandbox: It fetches repository assets (HTML, CSS, JS) from GitHub raw (e.g. raw.githubusercontent.com/<owner>/<repo>/<branch>/index.html), rewrites relative asset paths, and renders them in an interactive, responsive sandbox iframe with Desktop, Tablet, and Mobile viewport switchers.
+3. Dynamic HTML Sandbox: It fetches repository assets (HTML, CSS, JS) from GitHub raw, rewrites relative asset paths, and renders them in an interactive, responsive sandbox iframe with Desktop, Tablet, and Mobile viewport switchers.
 4. SPA Redirect Architecture: The root site includes 404.html with single-page app redirection scripts (spa-github-pages) so refreshing or opening any deep route never shows GitHub's 404 error page.
 5. Dual Links: Users get both the instant 200 OK Direct Preview link AND the external GitHub Pages link with activation guidance.`,
   },
@@ -129,17 +129,17 @@ Key Capabilities:
   },
   {
     id: "finops-costs",
-    title: "FinOps Cloud Cost Optimization & Right-Sizing",
+    title: "FinOps Cloud Cost Optimization & Right-Sizing in INR",
     category: "finops",
-    keywords: ["costs", "finops", "cloud spend", "right-sizing", "savings", "cluster", "aws", "gcp", "azure"],
-    content: `FinOps Cost Management:
-1. Baseline Spend: Total cluster cost is $2,840/month across compute ($1,920), storage ($410), and ingress/egress networking ($510).
+    keywords: ["costs", "finops", "cloud spend", "right-sizing", "savings", "cluster", "aws", "gcp", "azure", "inr"],
+    content: `FinOps Cost Management in INR:
+1. Baseline Spend: Total cluster cost is 235,000 INR/month across compute (160,000 INR), storage (34,000 INR), and networking (41,000 INR).
 2. Right-Sizing Recommendations:
-   - api-gateway: CPU request 500m -> 250m (Saves $85/mo)
-   - catalog postgres: Reclaim 40GB unallocated EBS volume (Saves $48/mo)
-   - payments worker: Scale down to 0 replicas during off-peak hours (Saves $120/mo)
-   - Spot instance migration for chaos-runner and batch scanners (Saves $167/mo)
-3. Total Projected Monthly Savings: $420/month (~15% reduction).`,
+   - api-gateway: CPU request 500m -> 250m (Saves 7,000 INR/mo)
+   - catalog postgres: Reclaim 40GB unallocated EBS volume (Saves 4,000 INR/mo)
+   - payments worker: Scale down to 0 replicas during off-peak hours (Saves 10,000 INR/mo)
+   - Spot instance migration for chaos-runner and batch scanners (Saves 14,000 INR/mo)
+3. Total Projected Monthly Savings: 35,000 INR/month (~15% reduction).`,
   },
   {
     id: "incidents-chaos",
@@ -201,7 +201,7 @@ function retrieveRelevantContext(query: string, topK: number = 3): KnowledgeChun
 }
 
 // ============================================================================
-// Chatbot Screen Component
+// Chatbot Screen / Widget Component
 // ============================================================================
 
 interface Message {
@@ -227,12 +227,17 @@ const getGroqApiKey = (): string => {
 const PRIMARY_MODEL = "openai/gpt-oss-120b";
 const FALLBACK_MODEL = "qwen/qwen3.8-27b";
 
-export default function Chatbot() {
+interface ChatbotProps {
+  isWidget?: boolean;
+  onClose?: () => void;
+}
+
+export default function Chatbot({ isWidget = false, onClose }: ChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "msg-welcome",
       sender: "bot",
-      text: "👋 Welcome to **SentinelOps AI Assistant**!\n\nI have complete RAG-indexed knowledge of the entire SentinelOps platform, including:\n- 🚀 **Zero-404 GitHub Pages Deployment** & Live Preview Runner\n- ☁️ **Render Cloud Deployment** with custom publish directory (`dist` / `build`)\n- 🛡️ **Real-time OSV/CVE Scanning** & Automated Remediation (e.g. CVE-2024-33663)\n- 🔒 **Kyverno Admission Policies** & Sigstore Cosign Image Signing\n- 📦 **8 Microservices Architecture**, GitOps, FinOps, & Chaos Lab\n\nHow can I help you today?",
+      text: "Welcome to SentinelOps AI Assistant!\n\nI have complete RAG-indexed knowledge of the entire SentinelOps platform, including:\n- Zero-404 GitHub Pages Deployment and Live Preview Runner\n- Render Cloud Deployment with custom publish directory (dist / build)\n- Real-time OSV/CVE Scanning and Automated Remediation (e.g. CVE-2024-33663)\n- Kyverno Admission Policies and Sigstore Cosign Image Signing\n- 8 Microservices Architecture, GitOps, FinOps (all in INR), and Chaos Lab\n\nHow can I help you today?",
       sources: ["SentinelOps Platform Overview & Mission"],
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
@@ -278,10 +283,10 @@ export default function Chatbot() {
       .map((c) => `[DOCUMENT: ${c.title}]\n${c.content}`)
       .join("\n\n");
 
-    // 2. Groq LLM Generation
+    // 2. Groq LLM Generation - Explicitly enforce NO asterisks (**) in output
     const systemPrompt = `You are SentinelOps AI Assistant, an expert DevSecOps and Cloud Reliability Engineer with authoritative knowledge of the SentinelOps platform.
 Answer the user's question accurately, concisely, and helpfully using the retrieved platform documentation below.
-Always include actionable terminal commands, configuration snippets, and specific technical details when appropriate.
+CRITICAL INSTRUCTION: Do NOT use markdown bold syntax (asterisks like **bold**) anywhere in your response. Write completely clean plain text without any ** symbols. All financial figures must be described in INR text (e.g. 235,000 INR).
 
 RETRIEVED PLATFORM DOCUMENTATION:
 ${contextText}
@@ -333,16 +338,19 @@ ${contextText}
 
       if (response.ok) {
         const data = await response.json();
-        const botReply =
+        const rawContent =
           data.choices?.[0]?.message?.content ||
           "I processed your query, but no response text was returned.";
+
+        // Strip any ** asterisks from response
+        const cleanContent = rawContent.replace(/\*\*/g, "");
 
         setMessages((prev) => [
           ...prev,
           {
             id: `bot-${Date.now()}`,
             sender: "bot",
-            text: botReply,
+            text: cleanContent,
             sources: sourceTitles,
             timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           },
@@ -352,8 +360,9 @@ ${contextText}
       }
     } catch (err: any) {
       console.warn("Groq query error, using local RAG synthesis:", err);
-      // Local fallback RAG synthesis if offline
-      const fallbackText = `Here is what SentinelOps platform data specifies regarding your query:\n\n${relevantChunks[0].content}\n\n*(Sourced from SentinelOps Knowledge Base: ${relevantChunks[0].title})*`;
+      // Local fallback RAG synthesis if offline, stripped of any **
+      const fallbackClean = relevantChunks[0].content.replace(/\*\*/g, "");
+      const fallbackText = `Here is what SentinelOps platform data specifies regarding your query:\n\n${fallbackClean}\n\n(Sourced from SentinelOps Knowledge Base: ${relevantChunks[0].title})`;
 
       setMessages((prev) => [
         ...prev,
@@ -379,106 +388,135 @@ ${contextText}
   ];
 
   return (
-    <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "1rem" }}>
+    <div
+      style={{
+        maxWidth: isWidget ? "100%" : "1000px",
+        margin: "0 auto",
+        padding: isWidget ? "0.75rem" : "1rem",
+        height: isWidget ? "100%" : "auto",
+        display: "flex",
+        flexDirection: "column",
+        color: "#000000",
+      }}
+    >
       {/* Header */}
-      <div style={{ marginBottom: "1.25rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
+      <div style={{ marginBottom: isWidget ? "0.5rem" : "1.25rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <span style={{ fontSize: "1.5rem" }}>💬</span>
-            <h2 style={{ fontSize: "1.5rem", fontWeight: 700, margin: 0, color: "#0f172a" }}>
-              SentinelOps AI Assistant (RAG)
+            <span style={{ fontSize: isWidget ? "1.2rem" : "1.5rem" }}>💬</span>
+            <h2 style={{ fontSize: isWidget ? "1.1rem" : "1.5rem", fontWeight: 800, margin: 0, color: "#000000" }}>
+              SentinelOps AI {isWidget ? "Widget" : "Assistant (RAG)"}
             </h2>
             <span
-              style={{
-                background: "rgba(37, 99, 235, 0.1)",
-                color: "#2563eb",
-                padding: "2px 8px",
-                borderRadius: "999px",
-                fontSize: "0.75rem",
-                fontWeight: 600,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.3rem",
-              }}
+              className="badge badge-pass"
+              style={{ fontSize: "0.7rem", padding: "2px 8px" }}
             >
-              <span className="live-dot" style={{ width: "6px", height: "6px", background: "#2563eb" }} />
-              Groq Powered (LLM + Vector RAG)
+              Groq LLM
             </span>
           </div>
-          <p style={{ marginTop: "0.25rem", fontSize: "0.875rem", color: "#64748b" }}>
-            Real-time domain intelligence over SentinelOps architecture, deployments, CVE fixes, and admission controls.
-          </p>
+          {!isWidget && (
+            <p style={{ marginTop: "0.25rem", fontSize: "0.875rem", fontWeight: 600, color: "#000000" }}>
+              Real-time domain intelligence over SentinelOps architecture, deployments, CVE fixes, and admission controls.
+            </p>
+          )}
         </div>
 
-        <button
-          type="button"
-          className="btn btn-secondary btn-sm"
-          onClick={() =>
-            setMessages([
-              {
-                id: "msg-welcome-reset",
-                sender: "bot",
-                text: "Chat reset. Ask me anything about SentinelOps architecture, deployments, CVE scanning, or policies!",
-                sources: ["SentinelOps Platform Overview & Mission"],
-                timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-              },
-            ])
-          }
-          style={{ fontSize: "0.75rem" }}
-        >
-          <span>🔄</span> Reset Chat
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() =>
+              setMessages([
+                {
+                  id: "msg-welcome-reset",
+                  sender: "bot",
+                  text: "Chat reset. Ask me anything about SentinelOps architecture, deployments, CVE scanning, or policies!",
+                  sources: ["SentinelOps Platform Overview & Mission"],
+                  timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                },
+              ])
+            }
+            style={{ fontSize: "0.7rem", padding: "2px 8px", color: "#000000", borderColor: "#000000" }}
+          >
+            Reset
+          </button>
+          {isWidget && onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                background: "#f1f5f9",
+                border: "1px solid #cbd5e1",
+                borderRadius: "6px",
+                width: "26px",
+                height: "26px",
+                cursor: "pointer",
+                fontWeight: 800,
+                color: "#000000",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              title="Close Chatbot Widget"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Suggested Questions */}
-      <div style={{ marginBottom: "1rem", display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
-        {SUGGESTED_PROMPTS.map((prompt, idx) => (
-          <button
-            key={idx}
-            type="button"
-            onClick={() => handleSend(prompt)}
-            style={{
-              background: "#ffffff",
-              border: "1px solid #e2e8f0",
-              color: "#2563eb",
-              borderRadius: "999px",
-              padding: "4px 12px",
-              fontSize: "0.75rem",
-              fontWeight: 500,
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#2563eb";
-              e.currentTarget.style.background = "#eff6ff";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "#e2e8f0";
-              e.currentTarget.style.background = "#ffffff";
-            }}
-          >
-            {prompt}
-          </button>
-        ))}
-      </div>
+      {/* Suggested Questions (only on full screen or top of widget if empty) */}
+      {!isWidget && (
+        <div style={{ marginBottom: "1rem", display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+          {SUGGESTED_PROMPTS.map((prompt, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => handleSend(prompt)}
+              style={{
+                background: "#ffffff",
+                border: "1px solid #000000",
+                color: "#000000",
+                borderRadius: "999px",
+                padding: "4px 12px",
+                fontSize: "0.75rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#000000";
+                e.currentTarget.style.color = "#ffffff";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#ffffff";
+                e.currentTarget.style.color = "#000000";
+              }}
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Chat Container Card */}
       <div
         className="card"
         style={{
           background: "#ffffff",
-          border: "1px solid #e2e8f0",
+          border: "1px solid #cbd5e1",
           borderRadius: "12px",
           display: "flex",
           flexDirection: "column",
-          height: "620px",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.05)",
+          height: isWidget ? "420px" : "600px",
+          flex: isWidget ? 1 : "none",
+          boxShadow: isWidget ? "none" : "0 4px 16px rgba(0,0,0,0.06)",
           padding: 0,
           overflow: "hidden",
         }}
       >
         {/* Messages Scroll Area */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "1rem", display: "flex", flexDirection: "column", gap: "0.85rem" }}>
           {messages.map((m) => {
             const isUser = m.sender === "user";
             return (
@@ -492,34 +530,35 @@ ${contextText}
                 }}
               >
                 {/* Sender badge & timestamp */}
-                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.25rem" }}>
-                  <span style={{ fontSize: "0.75rem", fontWeight: 700, color: isUser ? "#2563eb" : "#0f172a" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.2rem" }}>
+                  <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#000000" }}>
                     {isUser ? "You" : "🤖 SentinelOps AI"}
                   </span>
-                  <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>{m.timestamp}</span>
+                  <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#64748b" }}>{m.timestamp}</span>
                 </div>
 
                 {/* Bubble */}
                 <div
                   style={{
-                    maxWidth: "85%",
-                    padding: "0.85rem 1.15rem",
+                    maxWidth: isWidget ? "92%" : "85%",
+                    padding: "0.75rem 1rem",
                     borderRadius: isUser ? "14px 14px 2px 14px" : "14px 14px 14px 2px",
                     background: isUser ? "#2563eb" : "#f8fafc",
-                    color: isUser ? "#ffffff" : "#0f172a",
-                    border: isUser ? "none" : "1px solid #e2e8f0",
-                    fontSize: "0.875rem",
-                    lineHeight: "1.6",
+                    color: isUser ? "#ffffff" : "#000000",
+                    border: isUser ? "none" : "1px solid #cbd5e1",
+                    fontSize: isWidget ? "0.82rem" : "0.875rem",
+                    lineHeight: "1.55",
                     whiteSpace: "pre-wrap",
                     wordBreak: "break-word",
+                    fontWeight: 500,
                   }}
                 >
                   {m.text}
 
                   {/* Sources tag */}
                   {m.sources && m.sources.length > 0 && !isUser && (
-                    <div style={{ marginTop: "0.75rem", paddingTop: "0.5rem", borderTop: "1px solid #e2e8f0", fontSize: "0.72rem", color: "#64748b" }}>
-                      <span style={{ fontWeight: 600 }}>📚 Sources indexed:</span> {m.sources.join(" · ")}
+                    <div style={{ marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid #cbd5e1", fontSize: "0.7rem", color: "#000000", fontWeight: 600 }}>
+                      <span>Indexed Sources:</span> {m.sources.join(" · ")}
                     </div>
                   )}
                 </div>
@@ -532,13 +571,14 @@ ${contextText}
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "#94a3b8",
-                      fontSize: "0.7rem",
+                      color: "#64748b",
+                      fontSize: "0.68rem",
+                      fontWeight: 600,
                       cursor: "pointer",
-                      marginTop: "0.25rem",
+                      marginTop: "0.2rem",
                     }}
                   >
-                    {copiedId === m.id ? "✓ Copied" : "Copy response"}
+                    {copiedId === m.id ? "✓ Copied" : "Copy"}
                   </button>
                 )}
               </div>
@@ -546,9 +586,9 @@ ${contextText}
           })}
 
           {loading && (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#64748b", fontSize: "0.85rem", padding: "0.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#000000", fontSize: "0.82rem", fontWeight: 600, padding: "0.4rem" }}>
               <div className="live-dot" style={{ width: "8px", height: "8px", background: "#2563eb" }} />
-              <span>Retrieving knowledge chunks and querying Groq...</span>
+              <span>Querying Groq knowledge engine...</span>
             </div>
           )}
 
@@ -556,7 +596,7 @@ ${contextText}
         </div>
 
         {/* Input Bar */}
-        <div style={{ padding: "0.85rem 1.25rem", borderTop: "1px solid #e2e8f0", background: "#f8fafc" }}>
+        <div style={{ padding: "0.75rem 1rem", borderTop: "1px solid #cbd5e1", background: "#f8fafc" }}>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -569,23 +609,26 @@ ${contextText}
               className="input"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask anything about SentinelOps, zero-404 GitHub Pages, Render, CVE fixes..."
+              placeholder="Ask anything about SentinelOps..."
               disabled={loading}
               style={{
                 flex: 1,
                 background: "#ffffff",
-                border: "1px solid #cbd5e1",
-                color: "#0f172a",
+                border: "1px solid #000000",
+                color: "#000000",
                 borderRadius: "8px",
+                fontWeight: 600,
+                fontSize: "0.82rem",
+                padding: "8px 10px",
               }}
             />
             <button
               type="submit"
               className="btn btn-primary"
               disabled={loading || !input.trim()}
-              style={{ minWidth: "90px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.3rem" }}
+              style={{ fontWeight: 700, padding: "8px 16px", fontSize: "0.82rem" }}
             >
-              <span>🚀</span> Send
+              Send
             </button>
           </form>
         </div>

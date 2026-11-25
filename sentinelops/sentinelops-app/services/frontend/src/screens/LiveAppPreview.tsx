@@ -203,7 +203,7 @@ export default function LiveAppPreview({
           <span style={{ fontSize: "1.25rem" }}>🚀</span>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <strong style={{ fontSize: "1rem", color: "#0f172a" }}>
+              <strong style={{ fontSize: "1rem", color: "#000000", fontWeight: 800 }}>
                 {effectiveRepo}
               </strong>
               <span
@@ -222,11 +222,11 @@ export default function LiveAppPreview({
                 <span className="live-dot" style={{ width: "6px", height: "6px", background: "#22c55e" }} />
                 Live 200 OK
               </span>
-              <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
-                branch: <code style={{ color: "#2563eb", background: "#eff6ff", padding: "1px 5px", borderRadius: "3px" }}>{effectiveBranch}</code>
+              <span style={{ fontSize: "0.75rem", color: "#000000", fontWeight: 600 }}>
+                branch: <code style={{ color: "#000000", background: "#f1f5f9", padding: "1px 5px", borderRadius: "3px" }}>{effectiveBranch}</code>
               </span>
             </div>
-            <p style={{ margin: 0, fontSize: "0.72rem", color: "#64748b" }}>
+            <p style={{ margin: 0, fontSize: "0.72rem", color: "#000000", fontWeight: 600 }}>
               GitHub Pages Direct Runner · No 404 Error
             </p>
           </div>
