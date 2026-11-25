@@ -44,6 +44,7 @@ export default function Deployments() {
   const [repoUrl, setRepoUrl] = useState("https://github.com/sanjayreddy1/SentinaOps-A-cicd-tool");
   const [branch, setBranch] = useState("main");
   const [deployTarget, setDeployTarget] = useState<"pages" | "render">("pages");
+  const [publishDir, setPublishDir] = useState<"dist" | "build">("dist");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Fetch current deployments from API
@@ -87,11 +88,16 @@ export default function Deployments() {
 
   // Mutation to trigger real-time pipeline run
   const pipelineMutation = useMutation({
-    mutationFn: async ({ repo, br, target }: { repo: string; br: string; target: string }) => {
+    mutationFn: async ({ repo, br, target, publish_dir }: { repo: string; br: string; target: string; publish_dir?: string }) => {
       const res = await fetch("/api/pipeline/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repo_url: repo, branch: br, deploy_target: target }),
+        body: JSON.stringify({
+          repo_url: repo,
+          branch: br,
+          deploy_target: target,
+          publish_directory: publish_dir || "dist",
+        }),
       });
       if (!res.ok) throw new Error("Pipeline run failed");
       return await res.json();
@@ -161,11 +167,11 @@ export default function Deployments() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            pipelineMutation.mutate({ repo: repoUrl, br: branch, target: deployTarget });
+            pipelineMutation.mutate({ repo: repoUrl, br: branch, target: deployTarget, publish_dir: publishDir });
           }}
           style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "flex-end" }}
         >
-          <div style={{ flex: "1 1 300px" }}>
+          <div style={{ flex: "1 1 280px" }}>
             <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", marginBottom: "0.35rem" }}>
               GitHub Repository URL or owner/repo
             </label>
@@ -179,7 +185,7 @@ export default function Deployments() {
             />
           </div>
 
-          <div style={{ width: "110px" }}>
+          <div style={{ width: "100px" }}>
             <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", marginBottom: "0.35rem" }}>
               Branch
             </label>
@@ -192,7 +198,7 @@ export default function Deployments() {
             />
           </div>
 
-          <div style={{ width: "170px" }}>
+          <div style={{ width: "160px" }}>
             <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", marginBottom: "0.35rem" }}>
               Deployment Target
             </label>
@@ -207,6 +213,23 @@ export default function Deployments() {
             </select>
           </div>
 
+          {deployTarget === "render" && (
+            <div style={{ width: "150px" }}>
+              <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#38bdf8", marginBottom: "0.35rem" }}>
+                Publish Directory
+              </label>
+              <select
+                className="input"
+                value={publishDir}
+                onChange={(e) => setPublishDir(e.target.value as "dist" | "build")}
+                style={{ background: "#0a0f24", color: "#38bdf8", borderColor: "#38bdf8", fontWeight: 600 }}
+              >
+                <option value="dist">📁 dist (Default)</option>
+                <option value="build">📁 build</option>
+              </select>
+            </div>
+          )}
+
           <button
             type="submit"
             className="btn btn-primary"
@@ -219,7 +242,7 @@ export default function Deployments() {
               </>
             ) : (
               <>
-                <span>🚀</span> Scan &amp; Deploy to {deployTarget === "render" ? "Render" : "GitHub Pages"}
+                <span>🚀</span> Scan &amp; Deploy to {deployTarget === "render" ? `Render (${publishDir})` : "GitHub Pages"}
               </>
             )}
           </button>
@@ -271,6 +294,11 @@ export default function Deployments() {
                 <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
                   Commit: <code style={{ color: "#60a5fa" }}>{currentPipeline.commit_sha}</code>
                 </span>
+                {currentPipeline.deployment.publish_directory && currentPipeline.deployment.publish_directory !== "root" && (
+                  <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
+                    Publish Directory: <code style={{ color: "#38bdf8", background: "rgba(56, 189, 248, 0.1)", padding: "1px 5px", borderRadius: "3px" }}>{currentPipeline.deployment.publish_directory}</code>
+                  </span>
+                )}
               </div>
               <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#ffffff", margin: 0 }}>
                 Live Cloud Deployment Web Link

@@ -282,7 +282,12 @@ async def fetch_github_file(client: httpx.AsyncClient, owner: str, repo: str, br
     return None
 
 
-async def run_security_pipeline(repo_url: str, branch: str = "main", deploy_target: str = "pages") -> dict[str, Any]:
+async def run_security_pipeline(
+    repo_url: str,
+    branch: str = "main",
+    deploy_target: str = "pages",
+    publish_directory: str = "dist",
+) -> dict[str, Any]:
     """Execute on-demand real-time security check and cloud deployment for ANY GitHub repository and branch.
     Stores full report and live app links in persistent history.
     """
@@ -487,7 +492,7 @@ async def run_security_pipeline(repo_url: str, branch: str = "main", deploy_targ
     deployed_at = datetime.now(timezone.utc).isoformat()
 
     if "render" in target_lower:
-        action_text = f"Live Render web service provisioned at {live_url}."
+        action_text = f"Live Render web service provisioned at {live_url} (Publish directory: {publish_directory})."
         if render_deploy_id:
             action_text += f" Triggered deployment on Render API (Deploy ID: {render_deploy_id})."
         suggestions.append({
@@ -536,6 +541,7 @@ async def run_security_pipeline(repo_url: str, branch: str = "main", deploy_targ
             "live_url": live_url,
             "report_url": report_url,
             "cloud_provider": provider_name,
+            "publish_directory": publish_directory if "render" in target_lower else "root",
             "deployed_at": deployed_at,
             "rollout_state": rollout_state,
         },

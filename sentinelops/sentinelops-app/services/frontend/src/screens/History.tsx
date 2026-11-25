@@ -150,6 +150,11 @@ export default function History() {
                           <span className="badge badge-royal" style={{ fontSize: "0.65rem", padding: "1px 6px" }}>
                             {item.deployment?.cloud_provider?.includes("Render") ? "☁️ Render Cloud" : "🌐 GitHub Pages"}
                           </span>
+                          {item.deployment?.publish_directory && item.deployment?.publish_directory !== "root" && (
+                            <span className="badge badge-royal" style={{ fontSize: "0.65rem", padding: "1px 6px", borderColor: "#38bdf8", color: "#38bdf8" }}>
+                              📁 {item.deployment.publish_directory}
+                            </span>
+                          )}
                         </span>
                       </div>
                     </td>
@@ -258,7 +263,11 @@ export default function History() {
                   Security Check Report for {selectedReport.app_name}
                 </h3>
                 <p style={{ fontSize: "0.8rem", color: "#94a3b8", margin: "0.25rem 0 0 0" }}>
-                  Branch: <code>{selectedReport.branch}</code> · Commit: <code>{selectedReport.commit_sha}</code> · Scanned: {formatDate(selectedReport.scanned_at)}
+                  Branch: <code>{selectedReport.branch}</code> · Commit: <code>{selectedReport.commit_sha}</code>
+                  {selectedReport.deployment?.publish_directory && selectedReport.deployment?.publish_directory !== "root" && (
+                    <> · Publish Dir: <code style={{ color: "#38bdf8" }}>{selectedReport.deployment.publish_directory}</code></>
+                  )}
+                  {" "}· Scanned: {formatDate(selectedReport.scanned_at)}
                 </p>
               </div>
               <button

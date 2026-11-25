@@ -3,3 +3,23 @@ MIT License
 Copyright (c) 2026 Sanjay Reddy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files, to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software.
+
+Rules and Regulations
+---------------------
+
+Usage rules:
+
+- The software and its documentation may be copied, modified, and redistributed under the terms of this MIT license, provided that this license notice and the copyright notice are retained in all copies or substantial portions of the Software.
+- Redistribution and use in source and binary forms, with or without modification, are permitted, but the software must not be used in a manner that causes harm, facilitates illegal activity, or violates any applicable laws or regulations.
+- Users must not misrepresent the origin of the Software or claim that it is endorsed by the author without written permission.
+- Any redistributions must retain this license text; the Software is provided "as is", without warranty of any kind, and the author shall not be liable for damages arising from its use.
+
+Professional License Requirements:
+
+- All copies and substantial portions of the Software must include the above copyright notice, the MIT license text, and this disclaimer in any redistribution, in source or binary form.
+- Reverse engineering, decompilation, or disassembly of the Software is prohibited, except as required by applicable law.
+- Modified versions and derivative works remain subject to this same license; they may not be redistributed under a different, more restrictive, or conflicting license without the author's prior written consent.
+- Commercial, Government, or proprietary use of the Software is permitted under this MIT license only, without a separate paid license, provided use complies with all applicable laws, export control and sanctions regulations, and data protection and privacy requirements.
+- The Software and the services built with it must not be used to facilitate spying, surveillance without consent, mass scraping of individuals, or any activity that violates privacy laws or other applicable regulations.
+- License compliance, including attribution, notice retention, and record-keeping of copies and derivative works, is the responsibility of the end user and deployer.
+- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

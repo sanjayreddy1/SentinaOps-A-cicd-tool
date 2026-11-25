@@ -7,3 +7,12 @@ python-multipart==0.0.20
 passlib==1.7.*
 bcrypt==4.2.*
 pyjwt==2.10.*
+
+# Rules and regulations:
+# Usage of this software and its dependencies is governed by the MIT
+# license in the repository root (LICENSE). Key usage rules: software
+# may not be used to cause harm, facilitate illegal activity, or violate
+# applicable laws; redistributions must retain the license notice.
+# Professional license requirements: retain the MIT license and copyright
+# attribution; no reverse engineering; use must not violate export controls
+# or data protection/privacy laws; see the LICENSE file for details.

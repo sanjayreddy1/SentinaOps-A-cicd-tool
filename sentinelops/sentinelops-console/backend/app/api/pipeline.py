@@ -30,7 +30,8 @@ class PipelineRunRequest(BaseModel):
         description="GitHub repository URL or owner/repo to scan and deploy"
     )
     branch: str = Field(default="master", description="Git branch to scan and deploy")
-    deploy_target: str = Field(default="pages", description="Deployment target (e.g. pages, cloud)")
+    deploy_target: str = Field(default="pages", description="Deployment target (e.g. pages, render, cloud)")
+    publish_directory: str = Field(default="dist", description="Publish directory for Render static site / build (e.g. dist, build)")
 
 
 @router.post("/run")
@@ -40,6 +41,7 @@ async def run_pipeline(request: PipelineRunRequest) -> dict[str, Any]:
         repo_url=request.repo_url,
         branch=request.branch,
         deploy_target=request.deploy_target,
+        publish_directory=request.publish_directory,
     )
     return result
 
