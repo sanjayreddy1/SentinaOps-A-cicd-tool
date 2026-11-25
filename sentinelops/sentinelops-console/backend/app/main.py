@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import overview, deployments, rollouts, vulnerabilities, policy, incidents, remediations, costs, chaos, audit
-from app.api import github_events, pipeline
+from app.api import github_events, pipeline, chatbot
 
 app = FastAPI(title="SentinelOps Console API")
 
@@ -44,6 +44,7 @@ app.include_router(chaos.router)
 app.include_router(audit.router)
 app.include_router(github_events.router)
 app.include_router(pipeline.router)
+app.include_router(chatbot.router)
 
 
 @app.get("/healthz")

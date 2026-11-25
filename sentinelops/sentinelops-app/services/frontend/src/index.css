@@ -1,1 +1,182 @@
 @import "../../../../../build-docs/global(1).css";
+
+/* ==========================================================================
+   SentinelOps - White Background & Light Theme Styles
+   ========================================================================== */
+
+:root,
+[data-theme="light"],
+html:not([data-theme="dark"]) {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #f8fafc;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --link: #2563eb;
+  --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.25);
+
+  --so-navy-900: #ffffff;
+  --so-navy-800: #f8fafc;
+  --so-navy-700: #f1f5f9;
+  --so-primary-600: #2563eb;
+  --so-primary-500: #3b82f6;
+  --so-cyan-400: #0284c7;
+  --so-violet-500: #4f46e5;
+  --so-violet-400: #6366f1;
+
+  --so-gray-50: #ffffff;
+  --so-gray-100: #f8fafc;
+  --so-gray-200: #f1f5f9;
+  --so-gray-300: #e2e8f0;
+  --so-gray-500: #64748b;
+  --so-gray-700: #334155;
+  --so-gray-900: #0f172a;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.1);
+}
+
+/* White background theme utility overrides */
+[data-theme="light"] body {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .bg-navy-900 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .bg-navy-800 {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .bg-navy-700 {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .border-navy-800 {
+  border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .text-silver {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .text-white {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+[data-theme="light"] .card:hover {
+  border-color: #2563eb !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1) !important;
+}
+
+[data-theme="light"] .input {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .input:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+}
+
+[data-theme="light"] .input::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] select.input option {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] pre {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] code {
+  color: #1e293b !important;
+}
+
+[data-theme="light"] table {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] th {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] td {
+  border-bottom: 1px solid #f1f5f9 !important;
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .badge-pass {
+  background: rgba(34, 197, 94, 0.12) !important;
+  color: #16a34a !important;
+  font-weight: 600;
+}
+
+[data-theme="light"] .badge-warn {
+  background: rgba(245, 158, 11, 0.12) !important;
+  color: #d97706 !important;
+  font-weight: 600;
+}
+
+[data-theme="light"] .badge-fail {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #dc2626 !important;
+  font-weight: 600;
+}
+
+[data-theme="light"] .badge-royal {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .btn-secondary {
+  background: #ffffff !important;
+  color: #2563eb !important;
+  border: 1px solid #2563eb !important;
+}
+
+[data-theme="light"] .btn-secondary:hover {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .btn-white {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: 1px solid #2563eb !important;
+}
+
+[data-theme="light"] .btn-white:hover {
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+}

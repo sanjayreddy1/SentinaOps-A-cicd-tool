@@ -1,5 +1,627 @@
 [
   {
+    "run_id": "run-pcmill-main-20261125-043958",
+    "app_name": "pcmill",
+    "repo_url": "https://github.com/sanjayreddy1/pcmill",
+    "owner": "sanjayreddy1",
+    "repo": "pcmill",
+    "branch": "main",
+    "commit_sha": "main-head",
+    "status": "passed",
+    "scanned_at": "2026-11-25T04:40:00.639720+00:00",
+    "summary": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "total": 0
+    },
+    "vulnerabilities": [],
+    "suggestions": [
+      {
+        "target": "GitHub Pages Deployment",
+        "issue": "GITHUB-PAGES-SETUP",
+        "severity": "LOW",
+        "action": "GitHub Pages URL provisioned at https://sanjayreddy1.github.io/pcmill/. If GitHub displays 404, verify Pages is enabled under Repo Settings > Pages > Source > Deploy from a branch (or switch deployment target to Render Cloud).",
+        "command": "echo 'GitHub Pages target: https://sanjayreddy1.github.io/pcmill/'"
+      }
+    ],
+    "policy_violations": [],
+    "deployment": {
+      "status": "Live",
+      "environment": "GitHub Pages (Direct 200 OK Production)",
+      "live_url": "https://sanjayreddy1.github.io/SentinaOps-A-cicd-tool/?app=pcmill&branch=main&owner=sanjayreddy1",
+      "direct_preview_url": "https://sanjayreddy1.github.io/SentinaOps-A-cicd-tool/?app=pcmill&branch=main&owner=sanjayreddy1",
+      "external_pages_url": "https://sanjayreddy1.github.io/pcmill/",
+      "render_cloud_url": "https://pcmill.onrender.com",
+      "report_url": "/api/pipeline/report/run-pcmill-main-20261125-043958",
+      "cloud_provider": "GitHub Pages & SentinelOps Direct Runner",
+      "publish_directory": "root",
+      "deployed_at": "2026-11-25T04:40:00.639720+00:00",
+      "rollout_state": "Canary (100% Synced)"
+    }
+  },
+  {
+    "run_id": "run-sentinaops-a-cicd-tool-main-20261125-043847",
+    "app_name": "SentinaOps-A-cicd-tool",
+    "repo_url": "https://github.com/sanjayreddy1/SentinaOps-A-cicd-tool",
+    "owner": "sanjayreddy1",
+    "repo": "SentinaOps-A-cicd-tool",
+    "branch": "main",
+    "commit_sha": "main-head",
+    "status": "deployed_with_warnings",
+    "scanned_at": "2026-11-25T04:38:51.663650+00:00",
+    "summary": {
+      "critical": 0,
+      "high": 6,
+      "medium": 0,
+      "low": 0,
+      "total": 6
+    },
+    "vulnerabilities": [
+      {
+        "id": "GHSA-8h2j-cgx8-6xv7",
+        "aliases": [
+          "GHSA-8h2j-cgx8-6xv7"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "fastapi",
+        "installed_version": "0.115.",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade fastapi from 0.115. to Latest Patch to mitigate GHSA-8h2j-cgx8-6xv7. Run: `pip install fastapi>=Latest Patch`",
+        "remediation_cmd": "pip install fastapi>=Latest Patch"
+      },
+      {
+        "id": "PYSEC-2021-100",
+        "aliases": [
+          "PYSEC-2021-100"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "fastapi",
+        "installed_version": "0.115.",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade fastapi from 0.115. to Latest Patch to mitigate PYSEC-2021-100. Run: `pip install fastapi>=Latest Patch`",
+        "remediation_cmd": "pip install fastapi>=Latest Patch"
+      },
+      {
+        "id": "GHSA-33c7-2mpw-hg34",
+        "aliases": [
+          "GHSA-33c7-2mpw-hg34"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "uvicorn",
+        "installed_version": "0.0.1",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade uvicorn from 0.0.1 to Latest Patch to mitigate GHSA-33c7-2mpw-hg34. Run: `pip install uvicorn>=Latest Patch`",
+        "remediation_cmd": "pip install uvicorn>=Latest Patch"
+      },
+      {
+        "id": "GHSA-f97h-2pfx-f59f",
+        "aliases": [
+          "GHSA-f97h-2pfx-f59f"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "uvicorn",
+        "installed_version": "0.0.1",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade uvicorn from 0.0.1 to Latest Patch to mitigate GHSA-f97h-2pfx-f59f. Run: `pip install uvicorn>=Latest Patch`",
+        "remediation_cmd": "pip install uvicorn>=Latest Patch"
+      },
+      {
+        "id": "GHSA-h8pj-cxx2-jfg2",
+        "aliases": [
+          "GHSA-h8pj-cxx2-jfg2"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "httpx",
+        "installed_version": "0.27.",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade httpx from 0.27. to Latest Patch to mitigate GHSA-h8pj-cxx2-jfg2. Run: `pip install httpx>=Latest Patch`",
+        "remediation_cmd": "pip install httpx>=Latest Patch"
+      },
+      {
+        "id": "PYSEC-2022-183",
+        "aliases": [
+          "PYSEC-2022-183"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "httpx",
+        "installed_version": "0.27.",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade httpx from 0.27. to Latest Patch to mitigate PYSEC-2022-183. Run: `pip install httpx>=Latest Patch`",
+        "remediation_cmd": "pip install httpx>=Latest Patch"
+      }
+    ],
+    "suggestions": [
+      {
+        "target": "fastapi",
+        "issue": "GHSA-8h2j-cgx8-6xv7",
+        "severity": "HIGH",
+        "action": "Upgrade fastapi from 0.115. to Latest Patch to mitigate GHSA-8h2j-cgx8-6xv7. Run: `pip install fastapi>=Latest Patch`",
+        "command": "pip install fastapi>=Latest Patch"
+      },
+      {
+        "target": "fastapi",
+        "issue": "PYSEC-2021-100",
+        "severity": "HIGH",
+        "action": "Upgrade fastapi from 0.115. to Latest Patch to mitigate PYSEC-2021-100. Run: `pip install fastapi>=Latest Patch`",
+        "command": "pip install fastapi>=Latest Patch"
+      },
+      {
+        "target": "uvicorn",
+        "issue": "GHSA-33c7-2mpw-hg34",
+        "severity": "HIGH",
+        "action": "Upgrade uvicorn from 0.0.1 to Latest Patch to mitigate GHSA-33c7-2mpw-hg34. Run: `pip install uvicorn>=Latest Patch`",
+        "command": "pip install uvicorn>=Latest Patch"
+      },
+      {
+        "target": "uvicorn",
+        "issue": "GHSA-f97h-2pfx-f59f",
+        "severity": "HIGH",
+        "action": "Upgrade uvicorn from 0.0.1 to Latest Patch to mitigate GHSA-f97h-2pfx-f59f. Run: `pip install uvicorn>=Latest Patch`",
+        "command": "pip install uvicorn>=Latest Patch"
+      },
+      {
+        "target": "httpx",
+        "issue": "GHSA-h8pj-cxx2-jfg2",
+        "severity": "HIGH",
+        "action": "Upgrade httpx from 0.27. to Latest Patch to mitigate GHSA-h8pj-cxx2-jfg2. Run: `pip install httpx>=Latest Patch`",
+        "command": "pip install httpx>=Latest Patch"
+      },
+      {
+        "target": "httpx",
+        "issue": "PYSEC-2022-183",
+        "severity": "HIGH",
+        "action": "Upgrade httpx from 0.27. to Latest Patch to mitigate PYSEC-2022-183. Run: `pip install httpx>=Latest Patch`",
+        "command": "pip install httpx>=Latest Patch"
+      },
+      {
+        "target": "Render Cloud Deployment",
+        "issue": "RENDER-DEPLOY-LIVE",
+        "severity": "LOW",
+        "action": "Live Render web service provisioned at https://sentinaops.onrender.com (Publish directory: dist). Triggered deployment on Render API (Deploy ID: dep-dc36cmjrjlhs73euhfag).",
+        "command": "curl -I https://sentinaops.onrender.com"
+      }
+    ],
+    "policy_violations": [],
+    "deployment": {
+      "status": "Live",
+      "environment": "Render Cloud (Production Web Service)",
+      "live_url": "https://sentinaops.onrender.com",
+      "report_url": "/api/pipeline/report/run-sentinaops-a-cicd-tool-main-20261125-043847",
+      "cloud_provider": "Render Cloud Platform",
+      "publish_directory": "dist",
+      "deployed_at": "2026-11-25T04:38:51.663650+00:00",
+      "rollout_state": "Render Deploy Triggered (dep-dc36cmjr)"
+    }
+  },
+  {
+    "run_id": "run-pishlens-main-20261125-043823",
+    "app_name": "pishlens",
+    "repo_url": "https://github.com/sanjayreddy1/pishlens",
+    "owner": "sanjayreddy1",
+    "repo": "pishlens",
+    "branch": "main",
+    "commit_sha": "main-head",
+    "status": "deployed_with_warnings",
+    "scanned_at": "2026-11-25T04:38:28.088258+00:00",
+    "summary": {
+      "critical": 0,
+      "high": 2,
+      "medium": 0,
+      "low": 0,
+      "total": 2
+    },
+    "vulnerabilities": [
+      {
+        "id": "GHSA-356w-63v5-8wf4",
+        "aliases": [
+          "GHSA-356w-63v5-8wf4"
+        ],
+        "workload": "package.json",
+        "package": "vite",
+        "installed_version": "6.2.0",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade vite from 6.2.0 to Latest Patch to mitigate GHSA-356w-63v5-8wf4. Run: `npm install vite@Latest Patch`",
+        "remediation_cmd": "npm install vite@Latest Patch"
+      },
+      {
+        "id": "GHSA-4r4m-qw57-chr8",
+        "aliases": [
+          "GHSA-4r4m-qw57-chr8"
+        ],
+        "workload": "package.json",
+        "package": "vite",
+        "installed_version": "6.2.0",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade vite from 6.2.0 to Latest Patch to mitigate GHSA-4r4m-qw57-chr8. Run: `npm install vite@Latest Patch`",
+        "remediation_cmd": "npm install vite@Latest Patch"
+      }
+    ],
+    "suggestions": [
+      {
+        "target": "vite",
+        "issue": "GHSA-356w-63v5-8wf4",
+        "severity": "HIGH",
+        "action": "Upgrade vite from 6.2.0 to Latest Patch to mitigate GHSA-356w-63v5-8wf4. Run: `npm install vite@Latest Patch`",
+        "command": "npm install vite@Latest Patch"
+      },
+      {
+        "target": "vite",
+        "issue": "GHSA-4r4m-qw57-chr8",
+        "severity": "HIGH",
+        "action": "Upgrade vite from 6.2.0 to Latest Patch to mitigate GHSA-4r4m-qw57-chr8. Run: `npm install vite@Latest Patch`",
+        "command": "npm install vite@Latest Patch"
+      },
+      {
+        "target": "GitHub Pages Deployment",
+        "issue": "GITHUB-PAGES-SETUP",
+        "severity": "LOW",
+        "action": "GitHub Pages URL provisioned at https://sanjayreddy1.github.io/pishlens/. If GitHub displays 404, verify Pages is enabled under Repo Settings > Pages > Source > Deploy from a branch (or switch deployment target to Render Cloud).",
+        "command": "echo 'GitHub Pages target: https://sanjayreddy1.github.io/pishlens/'"
+      }
+    ],
+    "policy_violations": [],
+    "deployment": {
+      "status": "Live",
+      "environment": "GitHub Pages (Production)",
+      "live_url": "https://sanjayreddy1.github.io/pishlens/",
+      "report_url": "/api/pipeline/report/run-pishlens-main-20261125-043823",
+      "cloud_provider": "GitHub Pages & Actions",
+      "publish_directory": "root",
+      "deployed_at": "2026-11-25T04:38:28.088258+00:00",
+      "rollout_state": "Canary (100% Synced)"
+    }
+  },
+  {
+    "run_id": "run-sentinaops-a-cicd-tool-main-20261125-040931",
+    "app_name": "SentinaOps-A-cicd-tool",
+    "repo_url": "https://github.com/sanjayreddy1/SentinaOps-A-cicd-tool",
+    "owner": "sanjayreddy1",
+    "repo": "SentinaOps-A-cicd-tool",
+    "branch": "main",
+    "commit_sha": "9457a83",
+    "status": "deployed_with_warnings",
+    "scanned_at": "2026-11-25T04:09:32.448248+00:00",
+    "summary": {
+      "critical": 0,
+      "high": 6,
+      "medium": 0,
+      "low": 0,
+      "total": 6
+    },
+    "vulnerabilities": [
+      {
+        "id": "GHSA-8h2j-cgx8-6xv7",
+        "aliases": [
+          "GHSA-8h2j-cgx8-6xv7"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "fastapi",
+        "installed_version": "0.115.",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade fastapi from 0.115. to Latest Patch to mitigate GHSA-8h2j-cgx8-6xv7. Run: `pip install fastapi>=Latest Patch`",
+        "remediation_cmd": "pip install fastapi>=Latest Patch"
+      },
+      {
+        "id": "PYSEC-2021-100",
+        "aliases": [
+          "PYSEC-2021-100"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "fastapi",
+        "installed_version": "0.115.",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade fastapi from 0.115. to Latest Patch to mitigate PYSEC-2021-100. Run: `pip install fastapi>=Latest Patch`",
+        "remediation_cmd": "pip install fastapi>=Latest Patch"
+      },
+      {
+        "id": "GHSA-33c7-2mpw-hg34",
+        "aliases": [
+          "GHSA-33c7-2mpw-hg34"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "uvicorn",
+        "installed_version": "0.0.1",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade uvicorn from 0.0.1 to Latest Patch to mitigate GHSA-33c7-2mpw-hg34. Run: `pip install uvicorn>=Latest Patch`",
+        "remediation_cmd": "pip install uvicorn>=Latest Patch"
+      },
+      {
+        "id": "GHSA-f97h-2pfx-f59f",
+        "aliases": [
+          "GHSA-f97h-2pfx-f59f"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "uvicorn",
+        "installed_version": "0.0.1",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade uvicorn from 0.0.1 to Latest Patch to mitigate GHSA-f97h-2pfx-f59f. Run: `pip install uvicorn>=Latest Patch`",
+        "remediation_cmd": "pip install uvicorn>=Latest Patch"
+      },
+      {
+        "id": "GHSA-h8pj-cxx2-jfg2",
+        "aliases": [
+          "GHSA-h8pj-cxx2-jfg2"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "httpx",
+        "installed_version": "0.27.",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade httpx from 0.27. to Latest Patch to mitigate GHSA-h8pj-cxx2-jfg2. Run: `pip install httpx>=Latest Patch`",
+        "remediation_cmd": "pip install httpx>=Latest Patch"
+      },
+      {
+        "id": "PYSEC-2022-183",
+        "aliases": [
+          "PYSEC-2022-183"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "httpx",
+        "installed_version": "0.27.",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade httpx from 0.27. to Latest Patch to mitigate PYSEC-2022-183. Run: `pip install httpx>=Latest Patch`",
+        "remediation_cmd": "pip install httpx>=Latest Patch"
+      }
+    ],
+    "suggestions": [
+      {
+        "target": "fastapi",
+        "issue": "GHSA-8h2j-cgx8-6xv7",
+        "severity": "HIGH",
+        "action": "Upgrade fastapi from 0.115. to Latest Patch to mitigate GHSA-8h2j-cgx8-6xv7. Run: `pip install fastapi>=Latest Patch`",
+        "command": "pip install fastapi>=Latest Patch"
+      },
+      {
+        "target": "fastapi",
+        "issue": "PYSEC-2021-100",
+        "severity": "HIGH",
+        "action": "Upgrade fastapi from 0.115. to Latest Patch to mitigate PYSEC-2021-100. Run: `pip install fastapi>=Latest Patch`",
+        "command": "pip install fastapi>=Latest Patch"
+      },
+      {
+        "target": "uvicorn",
+        "issue": "GHSA-33c7-2mpw-hg34",
+        "severity": "HIGH",
+        "action": "Upgrade uvicorn from 0.0.1 to Latest Patch to mitigate GHSA-33c7-2mpw-hg34. Run: `pip install uvicorn>=Latest Patch`",
+        "command": "pip install uvicorn>=Latest Patch"
+      },
+      {
+        "target": "uvicorn",
+        "issue": "GHSA-f97h-2pfx-f59f",
+        "severity": "HIGH",
+        "action": "Upgrade uvicorn from 0.0.1 to Latest Patch to mitigate GHSA-f97h-2pfx-f59f. Run: `pip install uvicorn>=Latest Patch`",
+        "command": "pip install uvicorn>=Latest Patch"
+      },
+      {
+        "target": "httpx",
+        "issue": "GHSA-h8pj-cxx2-jfg2",
+        "severity": "HIGH",
+        "action": "Upgrade httpx from 0.27. to Latest Patch to mitigate GHSA-h8pj-cxx2-jfg2. Run: `pip install httpx>=Latest Patch`",
+        "command": "pip install httpx>=Latest Patch"
+      },
+      {
+        "target": "httpx",
+        "issue": "PYSEC-2022-183",
+        "severity": "HIGH",
+        "action": "Upgrade httpx from 0.27. to Latest Patch to mitigate PYSEC-2022-183. Run: `pip install httpx>=Latest Patch`",
+        "command": "pip install httpx>=Latest Patch"
+      },
+      {
+        "target": "GitHub Pages Deployment",
+        "issue": "GITHUB-PAGES-SETUP",
+        "severity": "LOW",
+        "action": "GitHub Pages URL provisioned at https://sanjayreddy1.github.io/SentinaOps-A-cicd-tool/. If GitHub displays 404, verify Pages is enabled under Repo Settings > Pages > Source > Deploy from a branch (or switch deployment target to Render Cloud).",
+        "command": "echo 'GitHub Pages target: https://sanjayreddy1.github.io/SentinaOps-A-cicd-tool/'"
+      }
+    ],
+    "policy_violations": [],
+    "deployment": {
+      "status": "Live",
+      "environment": "GitHub Pages (Production)",
+      "live_url": "https://sanjayreddy1.github.io/SentinaOps-A-cicd-tool/",
+      "report_url": "/api/pipeline/report/run-sentinaops-a-cicd-tool-main-20261125-040931",
+      "cloud_provider": "GitHub Pages & Actions",
+      "publish_directory": "root",
+      "deployed_at": "2026-11-25T04:09:32.448248+00:00",
+      "rollout_state": "Canary (100% Synced)"
+    }
+  },
+  {
+    "run_id": "run-sentinaops-a-cicd-tool-main-20261125-032620",
+    "app_name": "SentinaOps-A-cicd-tool",
+    "repo_url": "https://github.com/sanjayreddy1/SentinaOps-A-cicd-tool",
+    "owner": "sanjayreddy1",
+    "repo": "SentinaOps-A-cicd-tool",
+    "branch": "main",
+    "commit_sha": "9457a83",
+    "status": "deployed_with_warnings",
+    "scanned_at": "2026-11-25T03:26:22.665236+00:00",
+    "summary": {
+      "critical": 0,
+      "high": 6,
+      "medium": 0,
+      "low": 0,
+      "total": 6
+    },
+    "vulnerabilities": [
+      {
+        "id": "GHSA-8h2j-cgx8-6xv7",
+        "aliases": [
+          "GHSA-8h2j-cgx8-6xv7"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "fastapi",
+        "installed_version": "0.115.",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade fastapi from 0.115. to Latest Patch to mitigate GHSA-8h2j-cgx8-6xv7. Run: `pip install fastapi>=Latest Patch`",
+        "remediation_cmd": "pip install fastapi>=Latest Patch"
+      },
+      {
+        "id": "PYSEC-2021-100",
+        "aliases": [
+          "PYSEC-2021-100"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "fastapi",
+        "installed_version": "0.115.",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade fastapi from 0.115. to Latest Patch to mitigate PYSEC-2021-100. Run: `pip install fastapi>=Latest Patch`",
+        "remediation_cmd": "pip install fastapi>=Latest Patch"
+      },
+      {
+        "id": "GHSA-33c7-2mpw-hg34",
+        "aliases": [
+          "GHSA-33c7-2mpw-hg34"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "uvicorn",
+        "installed_version": "0.0.1",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade uvicorn from 0.0.1 to Latest Patch to mitigate GHSA-33c7-2mpw-hg34. Run: `pip install uvicorn>=Latest Patch`",
+        "remediation_cmd": "pip install uvicorn>=Latest Patch"
+      },
+      {
+        "id": "GHSA-f97h-2pfx-f59f",
+        "aliases": [
+          "GHSA-f97h-2pfx-f59f"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "uvicorn",
+        "installed_version": "0.0.1",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade uvicorn from 0.0.1 to Latest Patch to mitigate GHSA-f97h-2pfx-f59f. Run: `pip install uvicorn>=Latest Patch`",
+        "remediation_cmd": "pip install uvicorn>=Latest Patch"
+      },
+      {
+        "id": "GHSA-h8pj-cxx2-jfg2",
+        "aliases": [
+          "GHSA-h8pj-cxx2-jfg2"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "httpx",
+        "installed_version": "0.27.",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade httpx from 0.27. to Latest Patch to mitigate GHSA-h8pj-cxx2-jfg2. Run: `pip install httpx>=Latest Patch`",
+        "remediation_cmd": "pip install httpx>=Latest Patch"
+      },
+      {
+        "id": "PYSEC-2022-183",
+        "aliases": [
+          "PYSEC-2022-183"
+        ],
+        "workload": "sentinelops/sentinelops-app/services/catalog/requirements.txt",
+        "package": "httpx",
+        "installed_version": "0.27.",
+        "severity": "HIGH",
+        "fixed_in": "Latest Patch",
+        "summary": "",
+        "suggestion": "Upgrade httpx from 0.27. to Latest Patch to mitigate PYSEC-2022-183. Run: `pip install httpx>=Latest Patch`",
+        "remediation_cmd": "pip install httpx>=Latest Patch"
+      }
+    ],
+    "suggestions": [
+      {
+        "target": "fastapi",
+        "issue": "GHSA-8h2j-cgx8-6xv7",
+        "severity": "HIGH",
+        "action": "Upgrade fastapi from 0.115. to Latest Patch to mitigate GHSA-8h2j-cgx8-6xv7. Run: `pip install fastapi>=Latest Patch`",
+        "command": "pip install fastapi>=Latest Patch"
+      },
+      {
+        "target": "fastapi",
+        "issue": "PYSEC-2021-100",
+        "severity": "HIGH",
+        "action": "Upgrade fastapi from 0.115. to Latest Patch to mitigate PYSEC-2021-100. Run: `pip install fastapi>=Latest Patch`",
+        "command": "pip install fastapi>=Latest Patch"
+      },
+      {
+        "target": "uvicorn",
+        "issue": "GHSA-33c7-2mpw-hg34",
+        "severity": "HIGH",
+        "action": "Upgrade uvicorn from 0.0.1 to Latest Patch to mitigate GHSA-33c7-2mpw-hg34. Run: `pip install uvicorn>=Latest Patch`",
+        "command": "pip install uvicorn>=Latest Patch"
+      },
+      {
+        "target": "uvicorn",
+        "issue": "GHSA-f97h-2pfx-f59f",
+        "severity": "HIGH",
+        "action": "Upgrade uvicorn from 0.0.1 to Latest Patch to mitigate GHSA-f97h-2pfx-f59f. Run: `pip install uvicorn>=Latest Patch`",
+        "command": "pip install uvicorn>=Latest Patch"
+      },
+      {
+        "target": "httpx",
+        "issue": "GHSA-h8pj-cxx2-jfg2",
+        "severity": "HIGH",
+        "action": "Upgrade httpx from 0.27. to Latest Patch to mitigate GHSA-h8pj-cxx2-jfg2. Run: `pip install httpx>=Latest Patch`",
+        "command": "pip install httpx>=Latest Patch"
+      },
+      {
+        "target": "httpx",
+        "issue": "PYSEC-2022-183",
+        "severity": "HIGH",
+        "action": "Upgrade httpx from 0.27. to Latest Patch to mitigate PYSEC-2022-183. Run: `pip install httpx>=Latest Patch`",
+        "command": "pip install httpx>=Latest Patch"
+      },
+      {
+        "target": "GitHub Pages Deployment",
+        "issue": "GITHUB-PAGES-SETUP",
+        "severity": "LOW",
+        "action": "GitHub Pages URL provisioned at https://sanjayreddy1.github.io/SentinaOps-A-cicd-tool/. If GitHub displays 404, verify Pages is enabled under Repo Settings > Pages > Source > Deploy from a branch (or switch deployment target to Render Cloud).",
+        "command": "echo 'GitHub Pages target: https://sanjayreddy1.github.io/SentinaOps-A-cicd-tool/'"
+      }
+    ],
+    "policy_violations": [],
+    "deployment": {
+      "status": "Live",
+      "environment": "GitHub Pages (Production)",
+      "live_url": "https://sanjayreddy1.github.io/SentinaOps-A-cicd-tool/",
+      "report_url": "/api/pipeline/report/run-sentinaops-a-cicd-tool-main-20261125-032620",
+      "cloud_provider": "GitHub Pages & Actions",
+      "publish_directory": "root",
+      "deployed_at": "2026-11-25T03:26:22.665236+00:00",
+      "rollout_state": "Canary (100% Synced)"
+    }
+  },
+  {
     "run_id": "run-sanjusportfolio-master-20261124-175302",
     "app_name": "sanjusportfolio",
     "repo_url": "https://github.com/sanjayreddy1/sanjusportfolio",

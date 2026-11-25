@@ -45,7 +45,7 @@ fs.rmSync(rootBuild, { recursive: true, force: true });
 copyDirSync(frontendDist, rootDist);
 copyDirSync(frontendDist, rootBuild);
 
-// 5. Add SPA redirect support for Render
+// 5. Add SPA redirect support for Render and GitHub Pages
 const redirectsContent = "/* /index.html 200\n";
 fs.writeFileSync(path.join(rootDist, "_redirects"), redirectsContent);
 fs.writeFileSync(path.join(rootBuild, "_redirects"), redirectsContent);
@@ -53,5 +53,14 @@ fs.writeFileSync(path.join(rootBuild, "_redirects"), redirectsContent);
 // Add .nojekyll for static hosts
 fs.writeFileSync(path.join(rootDist, ".nojekyll"), "");
 fs.writeFileSync(path.join(rootBuild, ".nojekyll"), "");
+
+// Ensure 404.html is present in dist and build for GitHub Pages SPA routing
+if (fs.existsSync(path.join(frontendDist, "404.html"))) {
+  fs.copyFileSync(path.join(frontendDist, "404.html"), path.join(rootDist, "404.html"));
+  fs.copyFileSync(path.join(frontendDist, "404.html"), path.join(rootBuild, "404.html"));
+} else if (fs.existsSync(path.join(rootDist, "index.html"))) {
+  fs.copyFileSync(path.join(rootDist, "index.html"), path.join(rootDist, "404.html"));
+  fs.copyFileSync(path.join(rootBuild, "index.html"), path.join(rootBuild, "404.html"));
+}
 
 console.log("==> Render build complete! Output ready in both ./dist and ./build.");

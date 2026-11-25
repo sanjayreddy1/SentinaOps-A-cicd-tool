@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import LiveAppPreview from "./LiveAppPreview";
 
 const badgeFor = (status: string) => {
   switch (status?.toLowerCase()) {
@@ -21,6 +22,7 @@ const badgeFor = (status: string) => {
 
 export default function History() {
   const [selectedReport, setSelectedReport] = useState<any | null>(null);
+  const [selectedPreview, setSelectedPreview] = useState<any | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -162,21 +164,42 @@ export default function History() {
                     {/* Deployed App Link */}
                     <td style={{ padding: "1rem" }}>
                       {item.deployment?.live_url ? (
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            style={{ fontSize: "0.75rem", padding: "4px 10px", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.25rem" }}
+                            onClick={() => setSelectedPreview(item)}
+                          >
+                            <span>👁️</span> Live Preview
+                          </button>
                           <a
                             href={item.deployment.live_url}
                             target="_blank"
                             rel="noreferrer"
-                            className="btn btn-white btn-sm"
-                            style={{ fontSize: "0.75rem", padding: "4px 10px", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
+                            className="btn btn-secondary btn-sm"
+                            style={{ fontSize: "0.75rem", padding: "4px 10px", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.25rem" }}
                           >
-                            <span>🌐</span> Open App ↗
+                            <span>🌐</span> Direct URL ↗
                           </a>
+                          {item.deployment.render_cloud_url && (
+                            <a
+                              href={item.deployment.render_cloud_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="btn btn-secondary btn-sm"
+                              style={{ fontSize: "0.7rem", padding: "3px 8px", borderColor: "#38bdf8", color: "#0284c7" }}
+                              title="Render Web Service"
+                            >
+                              <span>☁️</span> Render
+                            </a>
+                          )}
                           <button
                             type="button"
                             className="btn btn-secondary btn-sm"
                             style={{ fontSize: "0.7rem", padding: "3px 8px" }}
                             onClick={() => handleCopy(item.deployment.live_url, `url-${idx}`)}
+                            title="Copy Direct Link"
                           >
                             {copiedId === `url-${idx}` ? "✓" : "Copy"}
                           </button>
@@ -381,6 +404,19 @@ export default function History() {
             </div>
           </div>
         </div>
+      )}
+      {/* ── LIVE APP PREVIEW MODAL (ZERO 404) ── */}
+      {selectedPreview && (
+        <LiveAppPreview
+          appName={selectedPreview.app_name || selectedPreview.repo}
+          repoUrl={selectedPreview.repo_url}
+          owner={selectedPreview.owner}
+          branch={selectedPreview.branch}
+          liveUrl={selectedPreview.deployment?.live_url}
+          externalUrl={selectedPreview.deployment?.external_pages_url}
+          renderUrl={selectedPreview.deployment?.render_cloud_url}
+          onClose={() => setSelectedPreview(null)}
+        />
       )}
     </div>
   );

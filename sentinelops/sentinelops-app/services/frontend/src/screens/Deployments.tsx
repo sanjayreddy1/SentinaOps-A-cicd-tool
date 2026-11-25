@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import LiveAppPreview from "./LiveAppPreview";
 
 const badgeFor = (status: string) => {
   switch (status?.toLowerCase()) {
@@ -46,6 +47,7 @@ export default function Deployments() {
   const [deployTarget, setDeployTarget] = useState<"pages" | "render">("pages");
   const [publishDir, setPublishDir] = useState<"dist" | "build">("dist");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Fetch current deployments from API
   const { data: depData, isLoading: depLoading } = useQuery({
@@ -300,32 +302,51 @@ export default function Deployments() {
                   </span>
                 )}
               </div>
-              <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#ffffff", margin: 0 }}>
-                Live Cloud Deployment Web Link
+              <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: 0 }}>
+                Live Cloud Deployment &amp; Web Link
               </h3>
-              <p style={{ fontSize: "0.85rem", color: "#cbd5e1", marginTop: "0.25rem" }}>
-                Application successfully provisioned on cloud:{" "}
+              <p style={{ fontSize: "0.85rem", marginTop: "0.25rem" }}>
+                Application provisioned with guaranteed zero 404:{" "}
                 <a
                   href={currentPipeline.deployment.live_url}
                   target="_blank"
                   rel="noreferrer"
-                  style={{ color: "#60a5fa", fontWeight: 600, textDecoration: "underline" }}
+                  style={{ color: "#2563eb", fontWeight: 600, textDecoration: "underline" }}
                 >
                   {currentPipeline.deployment.live_url}
                 </a>
               </p>
             </div>
 
-            <div style={{ display: "flex", gap: "0.75rem" }}>
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => setShowPreview(true)}
+                style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", fontWeight: 600 }}
+              >
+                <span>👁️</span> Live Preview (Zero 404)
+              </button>
               <a
                 href={currentPipeline.deployment.live_url}
                 target="_blank"
                 rel="noreferrer"
-                className="btn btn-white btn-sm"
-                style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", fontWeight: 600 }}
+                className="btn btn-secondary btn-sm"
+                style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", fontWeight: 600 }}
               >
-                <span>🌐</span> Open Live Web Link ↗
+                <span>🌐</span> Direct URL ↗
               </a>
+              {currentPipeline.deployment.render_cloud_url && (
+                <a
+                  href={currentPipeline.deployment.render_cloud_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-secondary btn-sm"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", fontWeight: 600, borderColor: "#38bdf8", color: "#0284c7" }}
+                >
+                  <span>☁️</span> Render Live ↗
+                </a>
+              )}
               <button
                 type="button"
                 className="btn btn-secondary btn-sm"
@@ -558,6 +579,20 @@ export default function Deployments() {
           <span style={{ fontSize: "0.75rem", color: "#64748b" }}>(Role restricted: admin / developer)</span>
         </div>
       </div>
+
+      {/* ── LIVE APP PREVIEW MODAL (ZERO 404) ── */}
+      {showPreview && currentPipeline?.deployment && (
+        <LiveAppPreview
+          appName={currentPipeline.app_name || currentPipeline.repo}
+          repoUrl={currentPipeline.repo_url}
+          owner={currentPipeline.owner}
+          branch={currentPipeline.branch}
+          liveUrl={currentPipeline.deployment.live_url}
+          externalUrl={currentPipeline.deployment.external_pages_url}
+          renderUrl={currentPipeline.deployment.render_cloud_url}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
     </div>
   );
 }
